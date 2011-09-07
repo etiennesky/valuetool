@@ -144,8 +144,15 @@ class ValueWidget(QWidget,Ui_Form):
         self.ymin=1e38
         self.ymax=-1e38
 
+        mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationSrs()
+
         for layer in rasterlayers:
-            isok,ident = layer.identify(mapPos)
+            layerSrs = layer.srs()
+            pos = mapPos
+            if not mapCanvasSrs == layerSrs:
+              srsTransform = QgsCoordinateTransform(mapCanvasSrs, layerSrs)
+              pos = srsTransform.transform(mapPos)
+            isok,ident = layer.identify(pos)
             if not isok:
                 continue
 
