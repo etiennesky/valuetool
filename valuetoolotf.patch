@@ -1,0 +1,29 @@
+--- valuewidget.py	2011-09-06 14:30:02.224850946 +0200
++++ /home/richard/dev/qgis/plugins/valuetool/valuewidget.py	2011-09-06 14:26:01.000000000 +0200
+@@ -144,13 +144,23 @@
+         self.ymin=1e38
+         self.ymax=-1e38
+ 
++
++        mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationSrs()
++
+         for layer in rasterlayers:
+-            isok,ident = layer.identify(mapPos)
++
++            layerSrs = layer.srs()
++            pos = mapPos
++            if not mapCanvasSrs == layerSrs:
++              srsTransform = QgsCoordinateTransform(mapCanvasSrs, layerSrs)
++              pos = srsTransform.transform(mapPos)
++
++            isok,ident = layer.identify(pos)
+             if not isok:
+-                continue
++              continue
+ 
+             layername=unicode(layer.name())
+-            
++
+             if layer.providerKey()=="grassraster":
+               if not ident.has_key(QString("value")):
+                 continue
