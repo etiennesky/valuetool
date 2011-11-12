@@ -149,7 +149,7 @@ class ValueWidget(QWidget,Ui_Form):
         for layer in rasterlayers:
             layerSrs = layer.srs()
             pos = mapPos
-            if not mapCanvasSrs == layerSrs:
+            if not mapCanvasSrs == layerSrs and self.iface.mapCanvas().hasCrsTransformEnabled():
               srsTransform = QgsCoordinateTransform(mapCanvasSrs, layerSrs)
               pos = srsTransform.transform(mapPos)
             isok,ident = layer.identify(pos)
@@ -166,6 +166,9 @@ class ValueWidget(QWidget,Ui_Form):
                 continue
               value = cstr.toDouble()
               if not value[1]:
+                # if this is not a double, it is probably a (GRASS string like
+                # 'out of extent' or 'null (no data)'. Let's just show that:
+                self.values.append((layername, cstr))
                 continue
               self.values.append((layername,cstr))
               if needextremum:
