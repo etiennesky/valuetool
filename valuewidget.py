@@ -18,6 +18,10 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
+import logging
+# change the level back to logging.WARNING(the default) before releasing
+logging.basicConfig(level=logging.DEBUG)
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
@@ -41,7 +45,8 @@ class ValueWidget(QWidget,Ui_Form):
 
         self.iface=iface
         self.canvas=canvas
-
+        self.logger = logging.getLogger('.'.join((__name__, 
+                                        self.__class__.__name__)))
         QObject.connect(self.checkBox_2,SIGNAL("stateChanged(int)"),self.changeActive)
         self.changeActive(Qt.Checked)
         QObject.connect(self.checkBox,SIGNAL("stateChanged(int)"),self.changePage)
