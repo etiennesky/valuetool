@@ -24,7 +24,7 @@ PLUGINNAME = valuetool
 # for building dist zip
 TEMPDIR = /tmp
 
-PY_FILES = __init__.py valuetool.py  valuewidgetbase.py  valuewidget.py
+PY_FILES = __init__.py valuetool.py valuewidgetbase.py valuewidget.py
 
 EXTRAS = docs/*
 
@@ -49,10 +49,10 @@ compile: $(UI_FILES)
 deploy: compile
 	mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vf $(UI_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vf $(RESOURCE_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	cp -vrf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)/docs
+	#cp -vf $(UI_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+	#cp -vf $(RESOURCE_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+	#cp -vrf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+	#mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)/docs
 
 
 dist: cleandist
