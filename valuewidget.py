@@ -36,15 +36,12 @@ from valuewidgetbase import Ui_Form
 
 class ValueWidget(QWidget,Ui_Form):
 
-    def __init__(self, iface, canvas):
+    def __init__(self, iface):
         QWidget.__init__(self)
-
-        
         Ui_Form.__init__(self)
         self.setupUi(self)
-
         self.iface=iface
-        self.canvas=canvas
+        self.canvas=self.iface.mapCanvas()
         self.logger = logging.getLogger('.'.join((__name__, 
                                         self.__class__.__name__)))
         QObject.connect(self.checkBox_2,SIGNAL("stateChanged(int)"),self.changeActive)

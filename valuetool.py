@@ -33,7 +33,6 @@ class ValueTool:
   def __init__(self, iface):
     # save reference to the QGIS interface
     self.iface = iface
-    self.canvas = iface.mapCanvas()
 
   def initGui(self):
     # create action that will start plugin configuration
@@ -47,7 +46,7 @@ class ValueTool:
     #self.tool = selectPointTool(self.iface.getMapCanvas(),self.action)
 
     # create the widget to display information
-    self.valuewidget = ValueWidget(self.iface,self.canvas)
+    self.valuewidget = ValueWidget(self.iface)
     # create the dockwidget with the correct parent and add the valuewidget
     self.valuedockwidget=QDockWidget("Value Tool" , self.iface.mainWindow() )
     self.valuedockwidget.setObjectName("Value Tool")
