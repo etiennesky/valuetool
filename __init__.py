@@ -21,16 +21,19 @@
 
 
 def name(): 
-  return "Value Tool"
+  return 'Value Tool'
 
 def description():
-  return "Display in a table or plot the values from the visible raster layers at the current mouse position" 
+  return 'Display in a table or plot the values from the visible raster layers at the current mouse position' 
 
 def version(): 
-  return "Version 0.3.4" 
+  return 'Version 0.3.5'
 
 def qgisMinimumVersion():
   return '1.0'
+
+def category():
+    return 'Raster'
 
 
 def authorName():

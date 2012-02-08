@@ -1,0 +1,16 @@
+[general]
+name = Value Tool
+qgisMinimumVersion = 1.0
+description = Display in a table or plot the values from the visible raster 
+	layers at the current mouse position
+category = Raster
+version = version 0.3.5
+; optional metadata entries
+changelog = Added the metadata.txt file
+tags = raster
+homepage = 
+tracker = 
+repository = 
+icon = 
+experimental = False
+deprecated = False
