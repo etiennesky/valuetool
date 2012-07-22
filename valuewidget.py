@@ -45,7 +45,9 @@ class ValueWidget(QWidget,Ui_Form):
         self.logger = logging.getLogger('.'.join((__name__, 
                                         self.__class__.__name__)))
         QObject.connect(self.checkBox_2,SIGNAL("stateChanged(int)"),self.changeActive)
-        self.changeActive(Qt.Checked)
+        #self.changeActive(Qt.Checked)
+        #set inactive by default - should save last state in user config
+        self.checkBox_2.setCheckState(Qt.Checked)
         QObject.connect(self.checkBox,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
 
@@ -105,11 +107,11 @@ class ValueWidget(QWidget,Ui_Form):
 
 
     def printValue(self,position):
-        mapPos = position
 
-        needextremum= self.checkBox.isChecked() # if plot is checked
+        if self.canvas.layerCount() == 0:
+            return
 
-        layers=self.iface
+        needextremum = self.checkBox.isChecked() # if plot is checked
 
         # count the number of requires rows and remember the raster layers
         nrow=0
@@ -150,11 +152,11 @@ class ValueWidget(QWidget,Ui_Form):
 
         for layer in rasterlayers:
             layerSrs = layer.srs()
-            pos = mapPos
+            pos = position
             if not mapCanvasSrs == layerSrs and self.iface.mapCanvas().hasCrsTransformEnabled():
               srsTransform = QgsCoordinateTransform(mapCanvasSrs, layerSrs)
               try:
-                pos = srsTransform.transform(mapPos)
+                pos = srsTransform.transform(position)
               except QgsCsException, err:
                 # ignore transformation errors
                 continue

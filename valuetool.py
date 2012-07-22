@@ -51,6 +51,7 @@ class ValueTool:
     self.valuedockwidget=QDockWidget("Value Tool" , self.iface.mainWindow() )
     self.valuedockwidget.setObjectName("Value Tool")
     self.valuedockwidget.setWidget(self.valuewidget)
+    QObject.connect(self.valuedockwidget, SIGNAL('visibilityChanged ( bool )'), self.showHideDockWidget)
     
     # add the dockwidget to iface
     self.iface.addDockWidget(Qt.LeftDockWidgetArea,self.valuedockwidget)
@@ -68,7 +69,8 @@ class ValueTool:
 
 
   def showHideDockWidget( self ):
-    if self.valuedockwidget.isVisible():
-        self.valuewidget.checkBox_2.setCheckState( Qt.Checked )
+    if self.valuedockwidget.isVisible() and self.valuewidget.checkBox_2.isChecked():
+      state = Qt.Checked
     else:
-        self.valuewidget.checkBox_2.setCheckState( Qt.Unchecked )
+      state = Qt.Unchecked
+    self.valuewidget.changeActive( state )
