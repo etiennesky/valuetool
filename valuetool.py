@@ -60,6 +60,8 @@ class ValueTool:
   def unload(self):
     self.valuedockwidget.close()
     self.valuewidget.disconnect()
+    # remove the dockwidget from iface
+    self.iface.removeDockWidget(self.valuedockwidget)
     # remove the plugin menu item and icon
     #self.iface.removePluginMenu("Analyses",self.action)
     #self.iface.removeToolBarIcon(self.action)
