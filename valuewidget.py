@@ -153,7 +153,11 @@ class ValueWidget(QWidget,Ui_Form):
             pos = mapPos
             if not mapCanvasSrs == layerSrs and self.iface.mapCanvas().hasCrsTransformEnabled():
               srsTransform = QgsCoordinateTransform(mapCanvasSrs, layerSrs)
-              pos = srsTransform.transform(mapPos)
+              try:
+                pos = srsTransform.transform(mapPos)
+              except QgsCsException, err:
+                # ignore transformation errors
+                continue
             isok,ident = layer.identify(pos)
             if not isok:
                 continue
