@@ -47,7 +47,7 @@ class ValueWidget(QWidget,Ui_Form):
         QObject.connect(self.checkBox_2,SIGNAL("stateChanged(int)"),self.changeActive)
         #self.changeActive(Qt.Checked)
         #set inactive by default - should save last state in user config
-        self.checkBox_2.setCheckState(Qt.Checked)
+        self.checkBox_2.setCheckState(Qt.Unchecked)
         QObject.connect(self.checkBox,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
 
