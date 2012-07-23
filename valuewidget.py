@@ -32,11 +32,20 @@ try:
 except:
     hasqwt=False
 
+hasmpl=True
+try:
+    import matplotlib.pyplot as plt 
+    import matplotlib.ticker as ticker
+except:
+    hasmpl=False
+
 from valuewidgetbase import Ui_Form
 
 class ValueWidget(QWidget,Ui_Form):
 
     def __init__(self, iface):
+        self.hasqwt=hasqwt
+        self.hasmpl=hasmpl
         QWidget.__init__(self)
         Ui_Form.__init__(self)
         self.setupUi(self)
@@ -50,8 +59,10 @@ class ValueWidget(QWidget,Ui_Form):
         self.checkBox_2.setCheckState(Qt.Unchecked)
         QObject.connect(self.checkBox,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
+        QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
 
-        if (hasqwt):
+
+        if (self.hasqwt):
             self.curve = QwtPlotCurve()
             self.curve.setSymbol(
                 QwtSymbol(QwtSymbol.Ellipse,
@@ -89,9 +100,15 @@ class ValueWidget(QWidget,Ui_Form):
 
     def changePage(self,state):
         if (state==Qt.Checked):
-            self.stackedWidget.setCurrentIndex(1)
+            if (self.plotSelector.currentText()=='matplotlib'):
+                self.stackedWidget.setCurrentIndex(2)
+            else:
+                self.stackedWidget.setCurrentIndex(1)
         else:
             self.stackedWidget.setCurrentIndex(0)
+
+    def changePlot(self):
+        self.changePage(self.checkBox_2.checkState())
 
     def changeActive(self,state):
         if (state==Qt.Checked):
@@ -238,7 +255,6 @@ class ValueWidget(QWidget,Ui_Form):
               self.tableWidget.setItem(irow,0,QTableWidgetItem())
               self.tableWidget.setItem(irow,1,QTableWidgetItem())
 
-
           self.tableWidget.item(irow,0).setText(layername)
           self.tableWidget.item(irow,1).setText(value)
           irow+=1
@@ -246,21 +262,31 @@ class ValueWidget(QWidget,Ui_Form):
 
     def plot(self):
 
-        if (hasqwt):
-            numvalues=[]
-            self.qwtPlot.setAxisMaxMinor(QwtPlot.xBottom,0)
-            #self.qwtPlot.setAxisMaxMajor(QwtPlot.xBottom,0)
-            self.qwtPlot.setAxisScale(QwtPlot.xBottom,1,len(self.values))
-            self.qwtPlot.setAxisScale(QwtPlot.yLeft,self.ymin,self.ymax)
-            
+        numvalues=[]
+        if ( (self.plotSelector.currentText()!='None') and (self.hasqwt or self.hasmpl) ):
             for row in self.values:
                 layername,value=row
                 try:
                     numvalues.append(float(value))
                 except:
                     numvalues.append(0)
+
+        if ( self.hasqwt and (self.plotSelector.currentText()=='Qwt') ):
+            self.qwtPlot.setAxisMaxMinor(QwtPlot.xBottom,0)
+            #self.qwtPlot.setAxisMaxMajor(QwtPlot.xBottom,0)
+            self.qwtPlot.setAxisScale(QwtPlot.xBottom,1,len(self.values))
+            self.qwtPlot.setAxisScale(QwtPlot.yLeft,self.ymin,self.ymax)
+            
             self.curve.setData(range(1,len(numvalues)+1), numvalues)
             self.qwtPlot.replot()
+
+        elif ( self.hasmpl and (self.plotSelector.currentText()=='matplotlib') ):
+            # axis major?
+            self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b')
+            self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())                                
+            self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
+            self.mplPlt.set_ylim( (self.ymin, self.ymax) ) 
+            self.mplFig.canvas.draw()
 
         #try:
                 #    attr = float(ident[j])

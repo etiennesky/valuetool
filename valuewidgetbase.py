@@ -16,6 +16,14 @@ try:
 except:
     hasqwt=False
 
+hasmpl=True
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
+except:
+    hasmpl=False
+
+
 class Ui_Form(object):
     def setupUi(self, Form):
 
@@ -40,6 +48,17 @@ class Ui_Form(object):
         self.checkBox.setObjectName("checkBox")
         self.hboxlayout.addWidget(self.checkBox)
 
+        self.plotSelector = QtGui.QComboBox(Form)
+        if self.hasqwt:
+            self.plotSelector.addItem( 'Qwt' )
+        if self.hasmpl:
+            self.plotSelector.addItem( 'matplotlib' )
+        self.plotSelector.setCurrentIndex( 0 );
+        if (not self.hasqwt or not self.hasmpl):
+            self.plotSelector.setVisible(False)
+
+        self.hboxlayout.addWidget(self.plotSelector)
+                
         spacerItem = QtGui.QSpacerItem(40,15,QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
         self.hboxlayout.addItem(spacerItem)
         self.vboxlayout.addLayout(self.hboxlayout)
@@ -56,21 +75,51 @@ class Ui_Form(object):
         self.stackedWidget.addWidget(self.tableWidget)
 
         #Page 2
-
-        if (hasqwt):
+        if self.hasqwt:
             self.qwtPlot = QwtPlot(self.stackedWidget)
             self.qwtPlot.setAutoFillBackground(False)
             self.qwtPlot.setObjectName("qwtPlot")
         else:
             self.qwtPlot = QtGui.QLabel("Need Qwt!")
-            
+
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.qwtPlot.sizePolicy().hasHeightForWidth())
         self.qwtPlot.setSizePolicy(sizePolicy)
         self.qwtPlot.setObjectName("qwtPlot")
+        self.qwtPlot.updateGeometry()
         self.stackedWidget.addWidget(self.qwtPlot)
+
+        #Page 3 - matplotlib
+        if self.hasmpl:
+            # mpl stuff
+            # should make figure light gray
+            self.mplFig = plt.Figure(facecolor='w', edgecolor='w')
+            self.mplFig.subplots_adjust(left=0.1, right=0.975, bottom=0.13, top=0.95)
+            self.mplPlt = self.mplFig.add_subplot(111)   
+            self.mplPlt.tick_params(axis='both', which='major', labelsize=12)
+            self.mplPlt.tick_params(axis='both', which='minor', labelsize=10)                           
+             # We want the axes cleared every time plot() is called
+            self.mplPlt.hold(False)
+            # qt stuff
+            self.pltCanvas = FigureCanvasQTAgg(self.mplFig)
+            self.pltCanvas.setParent(self.stackedWidget)
+            self.pltCanvas.setAutoFillBackground(False)
+            self.pltCanvas.setObjectName("mplPlot")
+            self.mplPlot = self.pltCanvas
+        else:
+            self.mplPlot = QtGui.QLabel("Need matplotlib!")         
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.mplPlot.sizePolicy().hasHeightForWidth())
+        self.mplPlot.setSizePolicy(sizePolicy)
+        self.qwtPlot.setObjectName("qwtPlot")
+        self.mplPlot.updateGeometry()
+        self.stackedWidget.addWidget(self.mplPlot)
+
         self.vboxlayout.addWidget(self.stackedWidget)
 
         self.retranslateUi(Form)
