@@ -44,8 +44,11 @@ from valuewidgetbase import Ui_Form
 class ValueWidget(QWidget,Ui_Form):
 
     def __init__(self, iface):
+
         self.hasqwt=hasqwt
         self.hasmpl=hasmpl
+        self.layerMap=dict()
+
         QWidget.__init__(self)
         Ui_Form.__init__(self)
         self.setupUi(self)
@@ -127,7 +130,7 @@ class ValueWidget(QWidget,Ui_Form):
 
         if self.canvas.layerCount() == 0:
             return
-
+        
         needextremum = self.checkBox.isChecked() # if plot is checked
 
         # count the number of requires rows and remember the raster layers
@@ -151,8 +154,9 @@ class ValueWidget(QWidget,Ui_Form):
               # check statistics for each band
               if needextremum:
                 for i in range( 1,layer.bandCount()+1 ):
-                  if not layer.hasStatistics(i):
-                    layersWOStatistics.append((layer,i))
+                  if not layer.id() in self.layerMap and not layer.hasStatistics(i)\
+                          and not layer in layersWOStatistics:
+                    layersWOStatistics.append(layer)
 
         if layersWOStatistics:
           self.calculateStatistics(layersWOStatistics)
@@ -167,6 +171,8 @@ class ValueWidget(QWidget,Ui_Form):
 
         mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationSrs()
 
+        # TODO - calculate the min/max values only once, instead of every time!!!
+        # keep them in a dict() with key=layer.id()
         for layer in rasterlayers:
             layerSrs = layer.srs()
             pos = position
@@ -210,10 +216,13 @@ class ValueWidget(QWidget,Ui_Form):
                 self.values.append((layernamewithband,bandvalue))
 
                 if needextremum:
-                  cstr=layer.bandStatistics(iband)
-                  self.ymin=min(self.ymin,cstr.minimumValue)
-                  self.ymax=max(self.ymax,cstr.maximumValue)
-
+                    if layer.hasStatistics(i):
+                        cstr=layer.bandStatistics(iband)
+                        self.ymin=min(self.ymin,cstr.minimumValue)
+                        self.ymax=max(self.ymax,cstr.maximumValue)
+                    else:
+                        self.ymin=min(self.ymin,layer.minimumValue(i))
+                        self.ymax=max(self.ymax,layer.maximumValue(i))
 
         if self.checkBox.isChecked():
           self.plot()
@@ -223,26 +232,35 @@ class ValueWidget(QWidget,Ui_Form):
 
     def calculateStatistics(self,layersWOStatistics):
 
-      lays= [l[0].name() for l in layersWOStatistics]
-      lays = list(set( lays ))
-      lays = QStringList() << lays
-      res = QMessageBox.warning( self, self.tr( 'Warning' ),
-                                 self.tr( 'There are no statistics in the following rasters:\n%1\n\nCalculate?' ).arg(lays.join('\n')),
-                                 QMessageBox.Yes | QMessageBox.No )
-      if res != QMessageBox.Yes:
-        self.checkBox_2.setCheckState(Qt.Unchecked)
-        return
+        layerNames = QStringList()
+        for layer in layersWOStatistics:
+            if not layer.id() in self.layerMap:
+                layerNames << layer.name()
 
-      # calculate statistics
-      save_state=self.checkBox_2.isChecked()
-      self.changeActive(Qt.Unchecked) # deactivate
+        if ( len(layerNames) != 0 ):
+            res = QMessageBox.warning( self, self.tr( 'Warning' ),
+                                       self.tr( 'There are no statistics in the following rasters:\n%1\n\nCalculate?' ).arg(layerNames.join('\n')),
+                                       QMessageBox.Yes | QMessageBox.No )
+            if res != QMessageBox.Yes:
+                #self.checkBox_2.setCheckState(Qt.Unchecked)  
+                for layer in layersWOStatistics:
+                    self.layerMap[layer.id()] = True
+                return
+        else:
+            print('ERROR, no layers to get stats for')
 
-      for layerband in layersWOStatistics:
-        layer,iband=layerband
-        stat = layer.bandStatistics(iband)
+        # calculate statistics
+        save_state=self.checkBox_2.isChecked()
+        self.changeActive(Qt.Unchecked) # deactivate
 
-      if save_state:
-        self.changeActive(Qt.Checked) # activate if necessary
+        for layer in layersWOStatistics:
+            if not layer.id() in self.layerMap:
+                self.layerMap[layer.id()] = True
+                for i in range( 1,layer.bandCount()+1 ):
+                    stat = layer.bandStatistics(i)
+
+        if save_state:
+            self.changeActive(Qt.Checked) # activate if necessary
 
 
     def printInTable(self):
