@@ -87,13 +87,17 @@ class ValueWidget(QWidget):
         self.hboxlayout = QtGui.QHBoxLayout()
         self.hboxlayout.setObjectName("hboxlayout")
 
+        # active
         self.checkBox_2 = QtGui.QCheckBox()
         self.checkBox_2.setChecked(True)
         self.checkBox_2.setObjectName("checkBox_2")
         self.hboxlayout.addWidget(self.checkBox_2)
+        self.separator = QtGui.QFrame()
+        self.separator.setFrameStyle( QtGui.QFrame.VLine | QtGui.QFrame.Sunken )
+        self.hboxlayout.addWidget(self.separator)
 
+        # graph
         self.checkBox = QtGui.QCheckBox()
-
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -182,8 +186,9 @@ class ValueWidget(QWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        #Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_2.setText(QtGui.QApplication.translate("Form", "Active (Shift+A)", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_2.setText(QtGui.QApplication.translate("Form", "Active", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_2.setToolTip(QtGui.QApplication.translate("Form", "(Shift+A) to toggle", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox.setText(QtGui.QApplication.translate("Form", "Graph", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
         self.tableWidget.setColumnCount(2)
