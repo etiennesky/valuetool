@@ -22,6 +22,7 @@ import logging
 # change the level back to logging.WARNING(the default) before releasing
 logging.basicConfig(level=logging.DEBUG)
 
+from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
@@ -38,29 +39,28 @@ try:
     import matplotlib
     import matplotlib.pyplot as plt 
     import matplotlib.ticker as ticker
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 except:
     hasmpl=False
 if hasmpl:
     if int(matplotlib.__version__[0]) < 1:
         hasmpl = False
 
-from valuewidgetbase import Ui_Form
-
-class ValueWidget(QWidget,Ui_Form):
+class ValueWidget(QWidget):
 
     def __init__(self, iface):
 
         self.hasqwt=hasqwt
         self.hasmpl=hasmpl
         self.layerMap=dict()
-
-        QWidget.__init__(self)
-        Ui_Form.__init__(self)
-        self.setupUi(self)
         self.iface=iface
         self.canvas=self.iface.mapCanvas()
         self.logger = logging.getLogger('.'.join((__name__, 
                                         self.__class__.__name__)))
+
+        QWidget.__init__(self)
+        self.setupUi()
+
         QObject.connect(self.checkBox_2,SIGNAL("stateChanged(int)"),self.changeActive)
         #self.changeActive(Qt.Checked)
         #set inactive by default - should save last state in user config
@@ -78,6 +78,125 @@ class ValueWidget(QWidget,Ui_Form):
                           QPen(Qt.red, 2),
                           QSize(9, 9)))
             self.curve.attach(self.qwtPlot)
+
+    def setupUi(self):
+
+        self.vboxlayout = QtGui.QVBoxLayout(self)
+        self.vboxlayout.setObjectName("vboxlayout")
+
+        self.hboxlayout = QtGui.QHBoxLayout()
+        self.hboxlayout.setObjectName("hboxlayout")
+
+        self.checkBox_2 = QtGui.QCheckBox()
+        self.checkBox_2.setChecked(True)
+        self.checkBox_2.setObjectName("checkBox_2")
+        self.hboxlayout.addWidget(self.checkBox_2)
+
+        self.checkBox = QtGui.QCheckBox()
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.checkBox.sizePolicy().hasHeightForWidth())
+        self.checkBox.setSizePolicy(sizePolicy)
+        self.checkBox.setObjectName("checkBox")
+        self.hboxlayout.addWidget(self.checkBox)
+
+        self.plotSelector = QtGui.QComboBox()
+        if self.hasqwt:
+            self.plotSelector.addItem( 'Qwt' )
+        if self.hasmpl:
+            self.plotSelector.addItem( 'matplotlib' )
+        self.plotSelector.setCurrentIndex( 0 );
+        if (not self.hasqwt or not self.hasmpl):
+            #self.plotSelector.setVisible(False)
+            self.plotSelector.setEnabled(False)
+
+        self.hboxlayout.addWidget(self.plotSelector)
+                
+        spacerItem = QtGui.QSpacerItem(40,15,QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
+        self.hboxlayout.addItem(spacerItem)
+        self.vboxlayout.addLayout(self.hboxlayout)
+
+        self.stackedWidget = QtGui.QStackedWidget()
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        self.stackedWidget.setSizePolicy(sizePolicy)
+        self.stackedWidget.setObjectName("stackedWidget")
+
+        # Page 1
+        self.tableWidget = QtGui.QTableWidget(self.stackedWidget)
+        self.tableWidget.setObjectName("tableWidget")
+        self.stackedWidget.addWidget(self.tableWidget)
+
+        #Page 2
+        if self.hasqwt:
+            self.qwtPlot = QwtPlot(self.stackedWidget)
+            self.qwtPlot.setAutoFillBackground(False)
+            self.qwtPlot.setObjectName("qwtPlot")
+        else:
+            self.qwtPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.qwtPlot.sizePolicy().hasHeightForWidth())
+        self.qwtPlot.setSizePolicy(sizePolicy)
+        self.qwtPlot.setObjectName("qwtPlot")
+        self.qwtPlot.updateGeometry()
+        self.stackedWidget.addWidget(self.qwtPlot)
+
+        #Page 3 - matplotlib
+        if self.hasmpl:
+            # mpl stuff
+            # should make figure light gray
+            self.mplLine = None #make sure to invalidate when layers change
+            self.mplBackground = None #http://www.scipy.org/Cookbook/Matplotlib/Animations
+            self.mplFig = plt.Figure(facecolor='w', edgecolor='w')
+            self.mplFig.subplots_adjust(left=0.1, right=0.975, bottom=0.13, top=0.95)
+            self.mplPlt = self.mplFig.add_subplot(111)   
+            self.mplPlt.tick_params(axis='both', which='major', labelsize=12)
+            self.mplPlt.tick_params(axis='both', which='minor', labelsize=10)                           
+            # qt stuff
+            self.pltCanvas = FigureCanvasQTAgg(self.mplFig)
+            self.pltCanvas.setParent(self.stackedWidget)
+            self.pltCanvas.setAutoFillBackground(False)
+            self.pltCanvas.setObjectName("mplPlot")
+            self.mplPlot = self.pltCanvas
+        else:
+            self.mplPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.mplPlot.sizePolicy().hasHeightForWidth())
+        self.mplPlot.setSizePolicy(sizePolicy)
+        self.qwtPlot.setObjectName("qwtPlot")
+        self.mplPlot.updateGeometry()
+        self.stackedWidget.addWidget(self.mplPlot)
+
+        self.vboxlayout.addWidget(self.stackedWidget)
+
+        self.retranslateUi()
+        self.stackedWidget.setCurrentIndex(0)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        #Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_2.setText(QtGui.QApplication.translate("Form", "Active (Shift+A)", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox.setText(QtGui.QApplication.translate("Form", "Graph", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.clear()
+        self.tableWidget.setColumnCount(2)
+        self.tableWidget.setRowCount(0)
+
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(QtGui.QApplication.translate("Form", "Layer", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.setHorizontalHeaderItem(0,headerItem)
+
+        headerItem1 = QtGui.QTableWidgetItem()
+        headerItem1.setText(QtGui.QApplication.translate("Form", "Value", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
+
 
     def disconnect(self):
         self.changeActive(False)

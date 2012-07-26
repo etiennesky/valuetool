@@ -24,7 +24,7 @@ PLUGINNAME = valuetool
 # for building dist zip
 TEMPDIR = /tmp
 
-PY_FILES = __init__.py valuetool.py valuewidgetbase.py valuewidget.py
+PY_FILES = __init__.py valuetool.py valuewidget.py
 
 EXTRAS = docs/*
 
