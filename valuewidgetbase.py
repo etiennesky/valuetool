@@ -55,7 +55,8 @@ class Ui_Form(object):
             self.plotSelector.addItem( 'matplotlib' )
         self.plotSelector.setCurrentIndex( 0 );
         if (not self.hasqwt or not self.hasmpl):
-            self.plotSelector.setVisible(False)
+            #self.plotSelector.setVisible(False)
+            self.plotSelector.setEnabled(False)
 
         self.hboxlayout.addWidget(self.plotSelector)
                 
@@ -80,7 +81,7 @@ class Ui_Form(object):
             self.qwtPlot.setAutoFillBackground(False)
             self.qwtPlot.setObjectName("qwtPlot")
         else:
-            self.qwtPlot = QtGui.QLabel("Need Qwt!")
+            self.qwtPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -95,13 +96,13 @@ class Ui_Form(object):
         if self.hasmpl:
             # mpl stuff
             # should make figure light gray
+            self.mplLine = None #make sure to invalidate when layers change
+            self.mplBackground = None #http://www.scipy.org/Cookbook/Matplotlib/Animations
             self.mplFig = plt.Figure(facecolor='w', edgecolor='w')
             self.mplFig.subplots_adjust(left=0.1, right=0.975, bottom=0.13, top=0.95)
             self.mplPlt = self.mplFig.add_subplot(111)   
             self.mplPlt.tick_params(axis='both', which='major', labelsize=12)
             self.mplPlt.tick_params(axis='both', which='minor', labelsize=10)                           
-             # We want the axes cleared every time plot() is called
-            self.mplPlt.hold(False)
             # qt stuff
             self.pltCanvas = FigureCanvasQTAgg(self.mplFig)
             self.pltCanvas.setParent(self.stackedWidget)
@@ -109,7 +110,7 @@ class Ui_Form(object):
             self.pltCanvas.setObjectName("mplPlot")
             self.mplPlot = self.pltCanvas
         else:
-            self.mplPlot = QtGui.QLabel("Need matplotlib!")         
+            self.mplPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)

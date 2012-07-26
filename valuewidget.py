@@ -32,12 +32,17 @@ try:
 except:
     hasqwt=False
 
+#test if matplotlib >= 1.0
 hasmpl=True
 try:
+    import matplotlib
     import matplotlib.pyplot as plt 
     import matplotlib.ticker as ticker
 except:
     hasmpl=False
+if hasmpl:
+    if int(matplotlib.__version__[0]) < 1:
+        hasmpl = False
 
 from valuewidgetbase import Ui_Form
 
@@ -77,8 +82,7 @@ class ValueWidget(QWidget,Ui_Form):
     def disconnect(self):
         self.changeActive(False)
         QObject.disconnect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
-
-
+    
     def pauseDisplay(self,e):
       if ( e.modifiers() == Qt.ShiftModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_A:
 
@@ -225,12 +229,15 @@ class ValueWidget(QWidget,Ui_Form):
                         self.ymax=max(self.ymax,layer.maximumValue(i))
 
         if self.checkBox.isChecked():
+            #TODO don't plot if there is no data to plot...
           self.plot()
         else:
           self.printInTable()
 
 
     def calculateStatistics(self,layersWOStatistics):
+        
+        self.invalidatePlot()
 
         layerNames = QStringList()
         for layer in layersWOStatistics:
@@ -248,11 +255,11 @@ class ValueWidget(QWidget,Ui_Form):
                 return
         else:
             print('ERROR, no layers to get stats for')
-
-        # calculate statistics
+        
         save_state=self.checkBox_2.isChecked()
         self.changeActive(Qt.Unchecked) # deactivate
 
+        # calculate statistics
         for layer in layersWOStatistics:
             if not layer.id() in self.layerMap:
                 self.layerMap[layer.id()] = True
@@ -290,6 +297,7 @@ class ValueWidget(QWidget,Ui_Form):
                     numvalues.append(0)
 
         if ( self.hasqwt and (self.plotSelector.currentText()=='Qwt') ):
+
             self.qwtPlot.setAxisMaxMinor(QwtPlot.xBottom,0)
             #self.qwtPlot.setAxisMaxMajor(QwtPlot.xBottom,0)
             self.qwtPlot.setAxisScale(QwtPlot.xBottom,1,len(self.values))
@@ -299,12 +307,24 @@ class ValueWidget(QWidget,Ui_Form):
             self.qwtPlot.replot()
 
         elif ( self.hasmpl and (self.plotSelector.currentText()=='matplotlib') ):
-            # axis major?
-            self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b')
-            self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())                                
-            self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
-            self.mplPlt.set_ylim( (self.ymin, self.ymax) ) 
-            self.mplFig.canvas.draw()
+
+            if self.mplLine is None:
+                self.mplPlt.clear()
+                self.mplLine, = self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b', animated=True)
+                self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
+                self.mplPlt.set_ylim( (self.ymin, self.ymax) )
+                self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+                self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+                self.mplFig.canvas.draw()
+                self.mplBackground = self.mplFig.canvas.copy_from_bbox(self.mplFig.bbox)
+            else:
+                # restore the clean slate background
+                self.mplFig.canvas.restore_region(self.mplBackground)
+                # update the data
+                self.mplLine.set_ydata(numvalues)
+                self.mplPlt.draw_artist(self.mplLine)
+                # just redraw the axes rectangle
+                self.mplFig.canvas.blit(self.mplFig.bbox)
 
         #try:
                 #    attr = float(ident[j])
@@ -321,3 +341,12 @@ class ValueWidget(QWidget,Ui_Form):
        #attr = int(ident[j])
        #attr = float(ident[j])  ##### I MUST IMPLEMENT RASTER TYPE HANDLING!!!!
        #outFeat.addAttribute(i, QVariant(attr))
+
+
+    def invalidatePlot(self):
+        if self.mplLine is not None:
+            del self.mplLine
+            self.mplLine = None
+
+    def resizeEvent(self, event):
+        self.invalidatePlot()
