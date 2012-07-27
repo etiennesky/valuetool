@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>288</width>
+    <width>360</width>
     <height>156</height>
    </rect>
   </property>
@@ -41,7 +41,21 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="plotSelector"/>
+      <widget class="QCheckBox" name="cbxStats">
+       <property name="toolTip">
+        <string>Compute min/max when layers are loaded</string>
+       </property>
+       <property name="text">
+        <string>Stats</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="plotSelector">
+       <property name="toolTip">
+        <string>Select plotting toolkit</string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -77,8 +91,6 @@
         </widget>
        </item>
       </layout>
-      <zorder>horizontalLayoutWidget</zorder>
-      <zorder>tableWidget</zorder>
      </widget>
     </widget>
    </item>

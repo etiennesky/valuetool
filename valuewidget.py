@@ -85,7 +85,7 @@ class ValueWidget(QWidget, Ui_Widget):
         if self.hasqwt:
             self.plotSelector.addItem( 'Qwt' )
         if self.hasmpl:
-            self.plotSelector.addItem( 'matplotlib' )
+            self.plotSelector.addItem( 'mpl' )
         self.plotSelector.setCurrentIndex( 0 );
         if (not self.hasqwt or not self.hasmpl):
             #self.plotSelector.setVisible(False)
@@ -176,7 +176,7 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def changePage(self,state):
         if (state==Qt.Checked):
-            if (self.plotSelector.currentText()=='matplotlib'):
+            if (self.plotSelector.currentText()=='mpl'):
                 self.stackedWidget.setCurrentIndex(2)
             else:
                 self.stackedWidget.setCurrentIndex(1)
@@ -316,10 +316,11 @@ class ValueWidget(QWidget, Ui_Widget):
                 layerNames << layer.name()
 
         if ( len(layerNames) != 0 ):
-            res = QMessageBox.warning( self, self.tr( 'Warning' ),
-                                       self.tr( 'There are no statistics in the following rasters:\n%1\n\nCalculate?' ).arg(layerNames.join('\n')),
-                                       QMessageBox.Yes | QMessageBox.No )
-            if res != QMessageBox.Yes:
+#            res = QMessageBox.warning( self, self.tr( 'Warning' ),
+#                                       self.tr( 'There are no statistics in the following rasters:\n%1\n\nCalculate?' ).arg(layerNames.join('\n')),
+#                                       QMessageBox.Yes | QMessageBox.No )
+#            if res != QMessageBox.Yes:
+            if not self.cbxStats.isChecked():
                 #self.cbxActive.setCheckState(Qt.Unchecked)  
                 for layer in layersWOStatistics:
                     self.layerMap[layer.id()] = True
@@ -377,7 +378,7 @@ class ValueWidget(QWidget, Ui_Widget):
             self.curve.setData(range(1,len(numvalues)+1), numvalues)
             self.qwtPlot.replot()
 
-        elif ( self.hasmpl and (self.plotSelector.currentText()=='matplotlib') ):
+        elif ( self.hasmpl and (self.plotSelector.currentText()=='mpl') ):
 
             if self.mplLine is None:
                 self.mplPlt.clear()
