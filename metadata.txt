@@ -4,9 +4,9 @@ qgisMinimumVersion = 1.0
 description = Display in a table or plot the values from the visible raster 
 	layers at the current mouse position
 category = Raster
-version = version 0.4.1
+version = version 0.4.2
 ; optional metadata entries
-changelog = min/max bugfix calculation - if user does not which to calculate stats, get min/max from layer
+changelog = matplotlib performance fixes ; invalidate stats when layers are added
 tags = raster
 homepage = 
 tracker = 
