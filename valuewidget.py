@@ -53,8 +53,11 @@ class ValueWidget(QWidget):
         self.hasqwt=hasqwt
         self.hasmpl=hasmpl
         self.layerMap=dict()
+        self.statsChecked=False
+
         self.iface=iface
         self.canvas=self.iface.mapCanvas()
+        self.legend=self.iface.legendInterface()
         self.logger = logging.getLogger('.'.join((__name__, 
                                         self.__class__.__name__)))
 
@@ -68,16 +71,8 @@ class ValueWidget(QWidget):
         QObject.connect(self.checkBox,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
-
-
-        if (self.hasqwt):
-            self.curve = QwtPlotCurve()
-            self.curve.setSymbol(
-                QwtSymbol(QwtSymbol.Ellipse,
-                          QBrush(Qt.white),
-                          QPen(Qt.red, 2),
-                          QSize(9, 9)))
-            self.curve.attach(self.qwtPlot)
+        QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
+        QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
 
     def setupUi(self):
 
@@ -138,6 +133,14 @@ class ValueWidget(QWidget):
             self.qwtPlot = QwtPlot(self.stackedWidget)
             self.qwtPlot.setAutoFillBackground(False)
             self.qwtPlot.setObjectName("qwtPlot")
+            self.curve = QwtPlotCurve()
+            self.curve.setSymbol(
+                QwtSymbol(QwtSymbol.Ellipse,
+                          QBrush(Qt.white),
+                          QPen(Qt.red, 2),
+                          QSize(9, 9)))
+            self.curve.attach(self.qwtPlot)
+
         else:
             self.qwtPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
@@ -286,7 +289,7 @@ class ValueWidget(QWidget):
                           and not layer in layersWOStatistics:
                     layersWOStatistics.append(layer)
 
-        if layersWOStatistics:
+        if layersWOStatistics and not self.statsChecked:
           self.calculateStatistics(layersWOStatistics)
                   
         # create the row if necessary
@@ -412,7 +415,7 @@ class ValueWidget(QWidget):
     def plot(self):
 
         numvalues=[]
-        if ( (self.plotSelector.currentText()!='None') and (self.hasqwt or self.hasmpl) ):
+        if ( self.hasqwt or self.hasmpl ):
             for row in self.values:
                 layername,value=row
                 try:
@@ -467,7 +470,11 @@ class ValueWidget(QWidget):
        #outFeat.addAttribute(i, QVariant(attr))
 
 
+    def statsNeedChecked(self, indx):
+        self.statsChecked = False
+
     def invalidatePlot(self):
+        self.statsChecked = False
         if self.mplLine is not None:
             del self.mplLine
             self.mplLine = None
