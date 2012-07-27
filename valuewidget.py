@@ -366,6 +366,8 @@ class ValueWidget(QWidget):
         
         self.invalidatePlot()
 
+        self.statsChecked = True
+
         layerNames = QStringList()
         for layer in layersWOStatistics:
             if not layer.id() in self.layerMap:
