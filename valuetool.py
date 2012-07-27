@@ -69,7 +69,7 @@ class ValueTool:
 
 
   def showHideDockWidget( self ):
-    if self.valuedockwidget.isVisible() and self.valuewidget.checkBox_2.isChecked():
+    if self.valuedockwidget.isVisible() and self.valuewidget.cbxActive.isChecked():
       state = Qt.Checked
     else:
       state = Qt.Unchecked

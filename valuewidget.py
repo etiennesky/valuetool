@@ -27,6 +27,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 
+from ui_valuewidgetbase import Ui_ValueWidgetBase as Ui_Widget
+
 hasqwt=True
 try:
     from PyQt4.Qwt5 import QwtPlot,QwtPlotCurve,QwtScaleDiv,QwtSymbol
@@ -46,7 +48,7 @@ if hasmpl:
     if int(matplotlib.__version__[0]) < 1:
         hasmpl = False
 
-class ValueWidget(QWidget):
+class ValueWidget(QWidget, Ui_Widget):
 
     def __init__(self, iface):
 
@@ -62,46 +64,24 @@ class ValueWidget(QWidget):
                                         self.__class__.__name__)))
 
         QWidget.__init__(self)
-        self.setupUi()
+        self.setupUi(self)
+        self.setupUi_extra()
 
-        QObject.connect(self.checkBox_2,SIGNAL("stateChanged(int)"),self.changeActive)
-        #self.changeActive(Qt.Checked)
-        #set inactive by default - should save last state in user config
-        self.checkBox_2.setCheckState(Qt.Unchecked)
-        QObject.connect(self.checkBox,SIGNAL("stateChanged(int)"),self.changePage)
+        QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
+        QObject.connect(self.cbxGraph,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
         QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
         QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
 
-    def setupUi(self):
+    def setupUi_extra(self):
 
-        self.vboxlayout = QtGui.QVBoxLayout(self)
-        self.vboxlayout.setObjectName("vboxlayout")
+        # checkboxes
+        #self.changeActive(Qt.Checked)
+        #set inactive by default - should save last state in user config
+        self.cbxActive.setCheckState(Qt.Unchecked)
 
-        self.hboxlayout = QtGui.QHBoxLayout()
-        self.hboxlayout.setObjectName("hboxlayout")
-
-        # active
-        self.checkBox_2 = QtGui.QCheckBox()
-        self.checkBox_2.setChecked(True)
-        self.checkBox_2.setObjectName("checkBox_2")
-        self.hboxlayout.addWidget(self.checkBox_2)
-        self.separator = QtGui.QFrame()
-        self.separator.setFrameStyle( QtGui.QFrame.VLine | QtGui.QFrame.Sunken )
-        self.hboxlayout.addWidget(self.separator)
-
-        # graph
-        self.checkBox = QtGui.QCheckBox()
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.checkBox.sizePolicy().hasHeightForWidth())
-        self.checkBox.setSizePolicy(sizePolicy)
-        self.checkBox.setObjectName("checkBox")
-        self.hboxlayout.addWidget(self.checkBox)
-
-        self.plotSelector = QtGui.QComboBox()
+        # plot
         if self.hasqwt:
             self.plotSelector.addItem( 'Qwt' )
         if self.hasmpl:
@@ -111,24 +91,7 @@ class ValueWidget(QWidget):
             #self.plotSelector.setVisible(False)
             self.plotSelector.setEnabled(False)
 
-        self.hboxlayout.addWidget(self.plotSelector)
-                
-        spacerItem = QtGui.QSpacerItem(40,15,QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
-        self.hboxlayout.addItem(spacerItem)
-        self.vboxlayout.addLayout(self.hboxlayout)
-
-        self.stackedWidget = QtGui.QStackedWidget()
-
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
-        self.stackedWidget.setSizePolicy(sizePolicy)
-        self.stackedWidget.setObjectName("stackedWidget")
-
-        # Page 1
-        self.tableWidget = QtGui.QTableWidget(self.stackedWidget)
-        self.tableWidget.setObjectName("tableWidget")
-        self.stackedWidget.addWidget(self.tableWidget)
-
-        #Page 2
+        # Page 2 - qwt
         if self.hasqwt:
             self.qwtPlot = QwtPlot(self.stackedWidget)
             self.qwtPlot.setAutoFillBackground(False)
@@ -182,28 +145,7 @@ class ValueWidget(QWidget):
         self.mplPlot.updateGeometry()
         self.stackedWidget.addWidget(self.mplPlot)
 
-        self.vboxlayout.addWidget(self.stackedWidget)
-
-        self.retranslateUi()
         self.stackedWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_2.setText(QtGui.QApplication.translate("Form", "Active", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_2.setToolTip(QtGui.QApplication.translate("Form", "(Shift+A) to toggle", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox.setText(QtGui.QApplication.translate("Form", "Graph", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.clear()
-        self.tableWidget.setColumnCount(2)
-        self.tableWidget.setRowCount(0)
-
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("Form", "Layer", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(0,headerItem)
-
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("Form", "Value", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
 
 
     def disconnect(self):
@@ -213,7 +155,7 @@ class ValueWidget(QWidget):
     def pauseDisplay(self,e):
       if ( e.modifiers() == Qt.ShiftModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_A:
 
-        self.checkBox_2.toggle()
+        self.cbxActive.toggle()
         return True
       return False
 
@@ -242,7 +184,7 @@ class ValueWidget(QWidget):
             self.stackedWidget.setCurrentIndex(0)
 
     def changePlot(self):
-        self.changePage(self.checkBox_2.checkState())
+        self.changePage(self.cbxActive.checkState())
 
     def changeActive(self,state):
         if (state==Qt.Checked):
@@ -262,7 +204,7 @@ class ValueWidget(QWidget):
         if self.canvas.layerCount() == 0:
             return
         
-        needextremum = self.checkBox.isChecked() # if plot is checked
+        needextremum = self.cbxGraph.isChecked() # if plot is checked
 
         # count the number of requires rows and remember the raster layers
         nrow=0
@@ -355,7 +297,7 @@ class ValueWidget(QWidget):
                         self.ymin=min(self.ymin,layer.minimumValue(i))
                         self.ymax=max(self.ymax,layer.maximumValue(i))
 
-        if self.checkBox.isChecked():
+        if self.cbxGraph.isChecked():
             #TODO don't plot if there is no data to plot...
           self.plot()
         else:
@@ -378,14 +320,14 @@ class ValueWidget(QWidget):
                                        self.tr( 'There are no statistics in the following rasters:\n%1\n\nCalculate?' ).arg(layerNames.join('\n')),
                                        QMessageBox.Yes | QMessageBox.No )
             if res != QMessageBox.Yes:
-                #self.checkBox_2.setCheckState(Qt.Unchecked)  
+                #self.cbxActive.setCheckState(Qt.Unchecked)  
                 for layer in layersWOStatistics:
                     self.layerMap[layer.id()] = True
                 return
         else:
             print('ERROR, no layers to get stats for')
         
-        save_state=self.checkBox_2.isChecked()
+        save_state=self.cbxActive.isChecked()
         self.changeActive(Qt.Unchecked) # deactivate
 
         # calculate statistics

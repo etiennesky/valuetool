@@ -28,7 +28,7 @@ PY_FILES = __init__.py valuetool.py valuewidget.py
 
 EXTRAS = docs/*
 
-UI_FILES = 
+UI_FILES = ui_valuewidgetbase.py
 
 RESOURCE_FILES = resources.py
 
@@ -49,7 +49,7 @@ compile: $(UI_FILES)
 deploy: compile
 	mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	#cp -vf $(UI_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+	cp -vf $(UI_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	#cp -vf $(RESOURCE_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	#cp -vrf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	#mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)/docs
