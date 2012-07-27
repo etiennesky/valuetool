@@ -56,6 +56,8 @@ class ValueWidget(QWidget, Ui_Widget):
         self.hasmpl=hasmpl
         self.layerMap=dict()
         self.statsChecked=False
+        self.ymin=0
+        self.ymax=250
 
         self.iface=iface
         self.canvas=self.iface.mapCanvas()
@@ -71,8 +73,9 @@ class ValueWidget(QWidget, Ui_Widget):
         QObject.connect(self.cbxGraph,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
-        QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
-        QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
+#        QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
+#        QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
+        QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
 
     def setupUi_extra(self):
 
@@ -103,7 +106,7 @@ class ValueWidget(QWidget, Ui_Widget):
                           QPen(Qt.red, 2),
                           QSize(9, 9)))
             self.curve.attach(self.qwtPlot)
-
+            self.qwtPlot.setVisible(False)
         else:
             self.qwtPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
@@ -133,6 +136,7 @@ class ValueWidget(QWidget, Ui_Widget):
             self.pltCanvas.setAutoFillBackground(False)
             self.pltCanvas.setObjectName("mplPlot")
             self.mplPlot = self.pltCanvas
+            self.mplPlot.setVisible(False)
         else:
             self.mplPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
@@ -202,6 +206,8 @@ class ValueWidget(QWidget, Ui_Widget):
     def printValue(self,position):
 
         if self.canvas.layerCount() == 0:
+            self.values=[]         
+            self.showValues()
             return
         
         needextremum = self.cbxGraph.isChecked() # if plot is checked
@@ -247,9 +253,15 @@ class ValueWidget(QWidget, Ui_Widget):
         # TODO - calculate the min/max values only once, instead of every time!!!
         # keep them in a dict() with key=layer.id()
         for layer in rasterlayers:
+            layername=unicode(layer.name())
             layerSrs = layer.srs()
-            pos = position
-            if not mapCanvasSrs == layerSrs and self.iface.mapCanvas().hasCrsTransformEnabled():
+            pos = position         
+
+            # if given no position, get dummy values
+            if position is None:
+                pos = QgsPoint(0,0)
+            # transform points if needed
+            elif not mapCanvasSrs == layerSrs and self.iface.mapCanvas().hasCrsTransformEnabled():
               srsTransform = QgsCoordinateTransform(mapCanvasSrs, layerSrs)
               try:
                 pos = srsTransform.transform(position)
@@ -260,8 +272,11 @@ class ValueWidget(QWidget, Ui_Widget):
             if not isok:
                 continue
 
-            layername=unicode(layer.name())
-            
+            # if given no position, set values to 0
+            if position is None:
+                for key in ident.iterkeys():
+                    ident[key] = 0
+
             if layer.providerKey()=="grassraster":
               if not ident.has_key(QString("value")):
                 continue
@@ -297,16 +312,18 @@ class ValueWidget(QWidget, Ui_Widget):
                         self.ymin=min(self.ymin,layer.minimumValue(i))
                         self.ymax=max(self.ymax,layer.maximumValue(i))
 
+        self.showValues()
+
+    def showValues(self):
         if self.cbxGraph.isChecked():
             #TODO don't plot if there is no data to plot...
-          self.plot()
+            self.plot()
         else:
-          self.printInTable()
-
+            self.printInTable()
 
     def calculateStatistics(self,layersWOStatistics):
         
-        self.invalidatePlot()
+        self.invalidatePlot(False)
 
         self.statsChecked = True
 
@@ -377,6 +394,7 @@ class ValueWidget(QWidget, Ui_Widget):
             
             self.curve.setData(range(1,len(numvalues)+1), numvalues)
             self.qwtPlot.replot()
+            self.qwtPlot.setVisible(len(numvalues)>0)
 
         elif ( self.hasmpl and (self.plotSelector.currentText()=='mpl') ):
 
@@ -393,10 +411,12 @@ class ValueWidget(QWidget, Ui_Widget):
                 # restore the clean slate background
                 self.mplFig.canvas.restore_region(self.mplBackground)
                 # update the data
+                self.mplLine.set_xdata(range(1,len(numvalues)+1))
                 self.mplLine.set_ydata(numvalues)
                 self.mplPlt.draw_artist(self.mplLine)
                 # just redraw the axes rectangle
                 self.mplFig.canvas.blit(self.mplFig.bbox)
+            self.mplPlot.setVisible(len(numvalues)>0)
 
         #try:
                 #    attr = float(ident[j])
@@ -416,13 +436,18 @@ class ValueWidget(QWidget, Ui_Widget):
 
 
     def statsNeedChecked(self, indx):
-        self.statsChecked = False
+        #self.statsChecked = False
+        self.invalidatePlot()
 
-    def invalidatePlot(self):
+    def invalidatePlot(self,replot=True):
         self.statsChecked = False
         if self.mplLine is not None:
             del self.mplLine
             self.mplLine = None
+        #update empty plot
+        if replot and self.cbxGraph.isChecked():
+            #self.values=[]
+            self.printValue( None )
 
     def resizeEvent(self, event):
         self.invalidatePlot()
