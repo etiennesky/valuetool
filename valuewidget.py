@@ -73,9 +73,6 @@ class ValueWidget(QWidget, Ui_Widget):
         QObject.connect(self.cbxGraph,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
-#        QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
-#        QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
-        QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
 
     def setupUi_extra(self):
 
@@ -192,11 +189,15 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def changeActive(self,state):
         if (state==Qt.Checked):
+            #QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
+            #QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
+            QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             if int(QGis.QGIS_VERSION[2]) > 2: # for QGIS >= 1.3
                 QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
             else:
                 QObject.connect(self.canvas, SIGNAL("xyCoordinates(QgsPoint &)"), self.printValue)
         else:
+            QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             if int(QGis.QGIS_VERSION[2]) > 2: # for QGIS >= 1.3
                 QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
             else:
