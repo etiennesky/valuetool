@@ -82,6 +82,9 @@ class ValueWidget(QWidget, Ui_Widget):
         self.cbxActive.setCheckState(Qt.Unchecked)
 
         # plot
+        self.plotSelector.setVisible( False )
+        self.cbxStats.setVisible( False )
+        self.graphControls.setVisible( False )
         if self.hasqwt:
             self.plotSelector.addItem( 'Qwt' )
         if self.hasmpl:
@@ -177,11 +180,17 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def changePage(self,state):
         if (state==Qt.Checked):
+            self.plotSelector.setVisible( True )
+            self.cbxStats.setVisible( True )
+            self.graphControls.setVisible( True )
             if (self.plotSelector.currentText()=='mpl'):
                 self.stackedWidget.setCurrentIndex(2)
             else:
                 self.stackedWidget.setCurrentIndex(1)
         else:
+            self.plotSelector.setVisible( False )
+            self.cbxStats.setVisible( False )
+            self.graphControls.setVisible( False )
             self.stackedWidget.setCurrentIndex(0)
 
     def changePlot(self):
@@ -386,12 +395,19 @@ class ValueWidget(QWidget, Ui_Widget):
                 except:
                     numvalues.append(0)
 
+        ymin = self.ymin
+        ymax = self.ymax
+        if self.leYMin.text() != '' and self.leYMax.text() != '': 
+            ymin = float(self.leYMin.text())
+            ymax = float(self.leYMax.text())        
+
         if ( self.hasqwt and (self.plotSelector.currentText()=='Qwt') ):
 
             self.qwtPlot.setAxisMaxMinor(QwtPlot.xBottom,0)
             #self.qwtPlot.setAxisMaxMajor(QwtPlot.xBottom,0)
             self.qwtPlot.setAxisScale(QwtPlot.xBottom,1,len(self.values))
-            self.qwtPlot.setAxisScale(QwtPlot.yLeft,self.ymin,self.ymax)
+            #self.qwtPlot.setAxisScale(QwtPlot.yLeft,self.ymin,self.ymax)
+            self.qwtPlot.setAxisScale(QwtPlot.yLeft,ymin,ymax)
             
             self.curve.setData(range(1,len(numvalues)+1), numvalues)
             self.qwtPlot.replot()
@@ -399,25 +415,34 @@ class ValueWidget(QWidget, Ui_Widget):
 
         elif ( self.hasmpl and (self.plotSelector.currentText()=='mpl') ):
 
-            if self.mplLine is None:
-                self.mplPlt.clear()
-                self.mplLine, = self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b', animated=True)
-                self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
-                self.mplPlt.set_ylim( (self.ymin, self.ymax) )
-                self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-                self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())
-                self.mplFig.canvas.draw()
-                self.mplBackground = self.mplFig.canvas.copy_from_bbox(self.mplFig.bbox)
-            else:
-                # restore the clean slate background
-                self.mplFig.canvas.restore_region(self.mplBackground)
-                # update the data
-                self.mplLine.set_xdata(range(1,len(numvalues)+1))
-                self.mplLine.set_ydata(numvalues)
-                self.mplPlt.draw_artist(self.mplLine)
-                # just redraw the axes rectangle
-                self.mplFig.canvas.blit(self.mplFig.bbox)
-            self.mplPlot.setVisible(len(numvalues)>0)
+            self.mplPlt.clear()
+            self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b')
+            self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+            self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
+            self.mplPlt.set_ylim( (ymin, ymax) ) 
+            self.mplFig.canvas.draw()
+
+            #disable optimizations - too many bugs, depending on mpl version!
+#            if self.mplLine is None:
+#                self.mplPlt.clear()
+#                self.mplLine, = self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b', animated=True)
+#                self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+#                self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+#                self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
+#                self.mplPlt.set_ylim( (self.ymin, self.ymax) )
+#                self.mplFig.canvas.draw()
+#                self.mplBackground = self.mplFig.canvas.copy_from_bbox(self.mplFig.bbox)
+#            else:
+#                # restore the clean slate background
+#                self.mplFig.canvas.restore_region(self.mplBackground)
+#                # update the data
+#                self.mplLine.set_xdata(range(1,len(numvalues)+1))
+#                self.mplLine.set_ydata(numvalues)
+#                self.mplPlt.draw_artist(self.mplLine)
+#                # just redraw the axes rectangle
+#                self.mplFig.canvas.blit(self.mplFig.bbox)
+#            self.mplPlot.setVisible(len(numvalues)>0)
 
         #try:
                 #    attr = float(ident[j])

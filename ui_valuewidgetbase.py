@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Fri Jul 27 14:10:24 2012
+# Created: Sun Aug 12 20:14:31 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_ValueWidgetBase(object):
     def setupUi(self, ValueWidgetBase):
         ValueWidgetBase.setObjectName(_fromUtf8("ValueWidgetBase"))
-        ValueWidgetBase.resize(360, 156)
+        ValueWidgetBase.resize(360, 190)
         ValueWidgetBase.setWindowTitle(QtGui.QApplication.translate("ValueWidgetBase", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout = QtGui.QVBoxLayout(ValueWidgetBase)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
@@ -37,18 +37,46 @@ class Ui_ValueWidgetBase(object):
         self.cbxGraph.setText(QtGui.QApplication.translate("ValueWidgetBase", "Graph", None, QtGui.QApplication.UnicodeUTF8))
         self.cbxGraph.setObjectName(_fromUtf8("cbxGraph"))
         self.horizontalLayout.addWidget(self.cbxGraph)
+        self.plotSelector = QtGui.QComboBox(ValueWidgetBase)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.plotSelector.sizePolicy().hasHeightForWidth())
+        self.plotSelector.setSizePolicy(sizePolicy)
+        self.plotSelector.setToolTip(QtGui.QApplication.translate("ValueWidgetBase", "Select plotting toolkit", None, QtGui.QApplication.UnicodeUTF8))
+        self.plotSelector.setObjectName(_fromUtf8("plotSelector"))
+        self.horizontalLayout.addWidget(self.plotSelector)
         self.cbxStats = QtGui.QCheckBox(ValueWidgetBase)
         self.cbxStats.setToolTip(QtGui.QApplication.translate("ValueWidgetBase", "Compute min/max when layers are loaded", None, QtGui.QApplication.UnicodeUTF8))
         self.cbxStats.setText(QtGui.QApplication.translate("ValueWidgetBase", "Stats", None, QtGui.QApplication.UnicodeUTF8))
         self.cbxStats.setObjectName(_fromUtf8("cbxStats"))
         self.horizontalLayout.addWidget(self.cbxStats)
-        self.plotSelector = QtGui.QComboBox(ValueWidgetBase)
-        self.plotSelector.setToolTip(QtGui.QApplication.translate("ValueWidgetBase", "Select plotting toolkit", None, QtGui.QApplication.UnicodeUTF8))
-        self.plotSelector.setObjectName(_fromUtf8("plotSelector"))
-        self.horizontalLayout.addWidget(self.plotSelector)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.graphControls = QtGui.QWidget(ValueWidgetBase)
+        self.graphControls.setObjectName(_fromUtf8("graphControls"))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.graphControls)
+        self.horizontalLayout_2.setMargin(0)
+        self.horizontalLayout_2.setMargin(0)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.label = QtGui.QLabel(self.graphControls)
+        self.label.setText(QtGui.QApplication.translate("ValueWidgetBase", "Y min", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.horizontalLayout_2.addWidget(self.label)
+        self.leYMin = QtGui.QLineEdit(self.graphControls)
+        self.leYMin.setObjectName(_fromUtf8("leYMin"))
+        self.horizontalLayout_2.addWidget(self.leYMin)
+        self.label_2 = QtGui.QLabel(self.graphControls)
+        self.label_2.setText(QtGui.QApplication.translate("ValueWidgetBase", "Y max", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.horizontalLayout_2.addWidget(self.label_2)
+        self.leYMax = QtGui.QLineEdit(self.graphControls)
+        self.leYMax.setObjectName(_fromUtf8("leYMax"))
+        self.horizontalLayout_2.addWidget(self.leYMax)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem1)
+        self.verticalLayout.addWidget(self.graphControls)
         self.stackedWidget = QtGui.QStackedWidget(ValueWidgetBase)
         self.stackedWidget.setObjectName(_fromUtf8("stackedWidget"))
         self.page = QtGui.QWidget()
