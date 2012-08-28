@@ -243,7 +243,11 @@ class ValueWidget(QWidget, Ui_Widget):
               # check statistics for each band
               if needextremum:
                 for i in range( 1,layer.bandCount()+1 ):
-                  if not layer.id() in self.layerMap and not layer.hasStatistics(i)\
+                  if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                    has_stats=layer.dataProvider().hasStatistics(i)
+                  else:
+                    has_stats=layer.hasStatistics(i)
+                  if not layer.id() in self.layerMap and not has_stats\
                           and not layer in layersWOStatistics:
                     layersWOStatistics.append(layer)
 
@@ -314,8 +318,15 @@ class ValueWidget(QWidget, Ui_Widget):
                 self.values.append((layernamewithband,bandvalue))
 
                 if needextremum:
-                    if layer.hasStatistics(i):
-                        cstr=layer.bandStatistics(iband)
+                    if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                        has_stats=layer.dataProvider().hasStatistics(i)
+                        if has_stats:
+                            cstr=layer.dataProvider().bandStatistics(iband)
+                    else:
+                        has_stats=layer.hasStatistics(i)
+                        if has_stats:
+                            cstr=layer.bandStatistics(iband)
+                    if has_stats:
                         self.ymin=min(self.ymin,cstr.minimumValue)
                         self.ymax=max(self.ymax,cstr.maximumValue)
                     else:
@@ -363,7 +374,10 @@ class ValueWidget(QWidget, Ui_Widget):
             if not layer.id() in self.layerMap:
                 self.layerMap[layer.id()] = True
                 for i in range( 1,layer.bandCount()+1 ):
-                    stat = layer.bandStatistics(i)
+                    if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                        stat = layer.dataProvider().bandStatistics(i)
+                    else:
+                        stat = layer.bandStatistics(i)
 
         if save_state:
             self.changeActive(Qt.Checked) # activate if necessary
