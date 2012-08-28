@@ -26,7 +26,7 @@ TEMPDIR = /tmp
 
 PY_FILES = __init__.py valuetool.py valuewidget.py
 
-EXTRAS = docs/*
+EXTRAS = metadata.txt
 
 UI_FILES = ui_valuewidgetbase.py
 
@@ -51,16 +51,66 @@ deploy: compile
 	cp -vf $(PY_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	#cp -vf $(RESOURCE_FILES) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
-	#cp -vrf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+	cp -vrf $(EXTRAS) $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
 	#mkdir -p $(HOME)/.qgis/python/plugins/$(PLUGINNAME)/docs
 
+#dist: cleandist
+#	mkdir -p $(TEMPDIR)/$(PLUGINNAME)
+#	cp -r ./*.* $(TEMPDIR)/$(PLUGINNAME)
+#	cd $(TEMPDIR); zip -9rv $(PLUGINNAME).zip $(PLUGINNAME)
+#	@echo "You can find the plugin for the qgis repo here: $(TEMPDIR)/$(PLUGINNAME).zip"
 
-dist: cleandist
-	mkdir -p $(TEMPDIR)/$(PLUGINNAME)
-	cp -r ./*.* $(TEMPDIR)/$(PLUGINNAME)
-	cd $(TEMPDIR); zip -9rv $(PLUGINNAME).zip $(PLUGINNAME)
-	@echo "You can find the plugin for the qgis repo here: $(TEMPDIR)/$(PLUGINNAME).zip"
+#cleandist:
+#	rm -rf $(TEMPDIR)/$(PLUGINNAME)
+#	rm -rf $(PLUGINNAME).zip
 
-cleandist:
-	rm -rf $(TEMPDIR)/$(PLUGINNAME)
-	rm -rf $(PLUGINNAME).zip
+# The dclean target removes compiled python files from plugin directory
+# also delets any .svn entry
+dclean:
+	find $(HOME)/.qgis/python/plugins/$(PLUGINNAME) -iname "*.pyc" -delete
+	find $(HOME)/.qgis/python/plugins/$(PLUGINNAME) -iname ".svn" -prune -exec rm -Rf {} \;
+
+# The derase deletes deployed plugin
+derase:
+	rm -Rf $(HOME)/.qgis/python/plugins/$(PLUGINNAME)
+
+# The zip target deploys the plugin and creates a zip file with the deployed
+# content. You can then upload the zip file on http://plugins.qgis.org
+zip: deploy dclean 
+	rm -f $(PLUGINNAME).zip
+	cd $(HOME)/.qgis/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
+
+# Create a zip package of the plugin named $(PLUGINNAME).zip. 
+# This requires use of git (your plugin development directory must be a 
+# git repository).
+# To use, pass a valid commit or tag as follows:
+#   make package VERSION=Version_0.3.2
+package: compile
+		rm -f $(PLUGINNAME).zip
+		git archive --prefix=$(PLUGINNAME)/ -o $(PLUGINNAME).zip $(VERSION)
+		echo "Created package: $(PLUGINNAME).zip"
+
+upload: zip
+	$(PLUGIN_UPLOAD) $(PLUGINNAME).zip
+
+# transup
+# update .ts translation files
+transup:
+	pylupdate4 Makefile
+
+# transcompile
+# compile translation files into .qm binary format
+transcompile: $(TRANSLATIONS:.ts=.qm)
+
+# transclean
+# deletes all .qm files
+transclean:
+	rm -f i18n/*.qm
+
+clean:
+	rm $(UI_FILES) $(RESOURCE_FILES)
+
+# build documentation with sphinx
+doc: 
+	cd help; make html
+
