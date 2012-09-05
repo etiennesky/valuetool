@@ -120,10 +120,10 @@ class ValueWidget(QWidget, Ui_Widget):
         self.stackedWidget.addWidget(self.qwtPlot)
 
         #Page 3 - matplotlib
+        self.mplLine = None #make sure to invalidate when layers change
         if self.hasmpl:
             # mpl stuff
             # should make figure light gray
-            self.mplLine = None #make sure to invalidate when layers change
             self.mplBackground = None #http://www.scipy.org/Cookbook/Matplotlib/Animations
             self.mplFig = plt.Figure(facecolor='w', edgecolor='w')
             self.mplFig.subplots_adjust(left=0.1, right=0.975, bottom=0.13, top=0.95)
