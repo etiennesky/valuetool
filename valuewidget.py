@@ -230,15 +230,26 @@ class ValueWidget(QWidget, Ui_Widget):
         for i in range(self.canvas.layerCount()):
             layer = self.canvas.layer(i)
             if (layer!=None and layer.isValid() and layer.type()==QgsMapLayer.RasterLayer):
-              if layer.providerKey()=="wms":
-                continue
+              if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
+                if not layer.dataProvider():
+                  continue
 
-              if layer.providerKey()=="grassraster":
-                nrow+=1
-                rasterlayers.append(layer)
-              else: # normal raster layer
+                if not layer.dataProvider().capabilities() & QgsRasterDataProvider.IdentifyValue:
+                  continue
+
                 nrow+=layer.bandCount()
                 rasterlayers.append(layer)
+
+              else: # < 1.9
+                if layer.providerKey()=="wms":
+                  continue
+
+                if layer.providerKey()=="grassraster":
+                  nrow+=1
+                  rasterlayers.append(layer)
+                else: # normal raster layer
+                  nrow+=layer.bandCount()
+                  rasterlayers.append(layer)
                 
               # check statistics for each band
               if needextremum:
@@ -266,6 +277,7 @@ class ValueWidget(QWidget, Ui_Widget):
 
         # TODO - calculate the min/max values only once, instead of every time!!!
         # keep them in a dict() with key=layer.id()
+                
         for layer in rasterlayers:
             layername=unicode(layer.name())
             layerSrs = layer.srs()
@@ -282,35 +294,38 @@ class ValueWidget(QWidget, Ui_Widget):
               except QgsCsException, err:
                 # ignore transformation errors
                 continue
-            isok,ident = layer.identify(pos)
-            if not isok:
+
+            if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
+              if not layer.dataProvider():
                 continue
 
-            # if given no position, set values to 0
-            if position is None:
-                for key in ident.iterkeys():
-                    ident[key] = 0
+              canvas = self.iface.mapCanvas()
+              extent = canvas.extent()
 
-            if layer.providerKey()=="grassraster":
-              if not ident.has_key(QString("value")):
-                continue
-              cstr = ident[QString("value")]
-              if cstr.isNull():
-                continue
-              value = cstr.toDouble()
-              if not value[1]:
-                # if this is not a double, it is probably a (GRASS string like
-                # 'out of extent' or 'null (no data)'. Let's just show that:
-                self.values.append((layername, cstr))
-                continue
-              self.values.append((layername,cstr))
-              if needextremum:
-                self.ymin = min(self.ymin,value[0])
-                self.ymax = max(self.ymax,value[0])
+              # TODO: how to get correct source (CRS) width/height
+              width = round(extent.width() / canvas.mapUnitsPerPixel());
+              height = round(extent.height() / canvas.mapUnitsPerPixel());
 
-            else:
+              extent = canvas.mapRenderer().mapToLayerCoordinates( layer, extent );
+
+              ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height )
+              if not len( ident ) > 0:
+                  continue
+
+              # if given no position, set values to 0
+              if position is None:
+                  for key in ident.iterkeys():
+                      ident[key] = layer.dataProvider().noDataValue(key)
+
               for iband in range(1,layer.bandCount()+1): # loop over the bands
-                bandvalue=ident[layer.bandName(iband)]
+                if not ident.has_key( iband ): # should not happen
+                  bandvalue = "?"
+                else: 
+                  doubleValue =  ident[iband].toDouble()[0]
+                  if layer.dataProvider().isNoDataValue ( iband, doubleValue ):  
+                    bandvalue = "no data"
+                  else:
+                    bandvalue = QgsRasterBlock.printValue( doubleValue )
                 layernamewithband=layername
                 if len(ident)>1:
                     layernamewithband+=' '+layer.bandName(iband)
@@ -332,6 +347,58 @@ class ValueWidget(QWidget, Ui_Widget):
                     else:
                         self.ymin=min(self.ymin,layer.minimumValue(i))
                         self.ymax=max(self.ymax,layer.maximumValue(i))
+
+            else: # QGIS < 1.9
+              isok,ident = layer.identify(pos)
+              if not isok:
+                  continue
+
+              # if given no position, set values to 0
+              if position is None:
+                  for key in ident.iterkeys():
+                      ident[key] = 0
+
+              if layer.providerKey()=="grassraster":
+                if not ident.has_key(QString("value")):
+                  continue
+                cstr = ident[QString("value")]
+                if cstr.isNull():
+                  continue
+                value = cstr.toDouble()
+                if not value[1]:
+                  # if this is not a double, it is probably a (GRASS string like
+                  # 'out of extent' or 'null (no data)'. Let's just show that:
+                  self.values.append((layername, cstr))
+                  continue
+                self.values.append((layername,cstr))
+                if needextremum:
+                  self.ymin = min(self.ymin,value[0])
+                  self.ymax = max(self.ymax,value[0])
+
+              else:
+                for iband in range(1,layer.bandCount()+1): # loop over the bands
+                  bandvalue=ident[layer.bandName(iband)]
+                  layernamewithband=layername
+                  if len(ident)>1:
+                      layernamewithband+=' '+layer.bandName(iband)
+
+                  self.values.append((layernamewithband,bandvalue))
+
+                  if needextremum:
+                      if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                          has_stats=layer.dataProvider().hasStatistics(i)
+                          if has_stats:
+                              cstr=layer.dataProvider().bandStatistics(iband)
+                      else:
+                          has_stats=layer.hasStatistics(i)
+                          if has_stats:
+                              cstr=layer.bandStatistics(iband)
+                      if has_stats:
+                          self.ymin=min(self.ymin,cstr.minimumValue)
+                          self.ymax=max(self.ymax,cstr.maximumValue)
+                      else:
+                          self.ymin=min(self.ymin,layer.minimumValue(i))
+                          self.ymax=max(self.ymax,layer.maximumValue(i))
 
         self.showValues()
 
