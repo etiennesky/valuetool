@@ -299,18 +299,20 @@ class ValueWidget(QWidget, Ui_Widget):
               if not layer.dataProvider():
                 continue
 
-              canvas = self.iface.mapCanvas()
-              extent = canvas.extent()
+              ident = None
+              if position is not None:
+                canvas = self.iface.mapCanvas()
+                extent = canvas.extent()
 
-              # TODO: how to get correct source (CRS) width/height
-              width = round(extent.width() / canvas.mapUnitsPerPixel());
-              height = round(extent.height() / canvas.mapUnitsPerPixel());
+                # TODO: how to get correct source (CRS) width/height
+                width = round(extent.width() / canvas.mapUnitsPerPixel());
+                height = round(extent.height() / canvas.mapUnitsPerPixel());
 
-              extent = canvas.mapRenderer().mapToLayerCoordinates( layer, extent );
+                extent = canvas.mapRenderer().mapToLayerCoordinates( layer, extent );
 
-              ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height )
-              if not len( ident ) > 0:
-                  continue
+                ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height )
+                if not len( ident ) > 0:
+                    continue
 
               # if given no position, set values to 0
               if position is None:
@@ -318,7 +320,11 @@ class ValueWidget(QWidget, Ui_Widget):
                       ident[key] = layer.dataProvider().noDataValue(key)
 
               for iband in range(1,layer.bandCount()+1): # loop over the bands
-                if not ident.has_key( iband ): # should not happen
+                layernamewithband=layername
+                if len(ident)>1:
+                    layernamewithband+=' '+layer.bandName(iband)
+
+                if not ident or not ident.has_key( iband ): # should not happen
                   bandvalue = "?"
                 else: 
                   doubleValue =  ident[iband].toDouble()[0]
@@ -326,21 +332,13 @@ class ValueWidget(QWidget, Ui_Widget):
                     bandvalue = "no data"
                   else:
                     bandvalue = QgsRasterBlock.printValue( doubleValue )
-                layernamewithband=layername
-                if len(ident)>1:
-                    layernamewithband+=' '+layer.bandName(iband)
 
                 self.values.append((layernamewithband,bandvalue))
 
                 if needextremum:
-                    if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
-                        has_stats=layer.dataProvider().hasStatistics(i)
-                        if has_stats:
-                            cstr=layer.dataProvider().bandStatistics(iband)
-                    else:
-                        has_stats=layer.hasStatistics(i)
-                        if has_stats:
-                            cstr=layer.bandStatistics(iband)
+                    has_stats=layer.hasStatistics(i)
+                    if has_stats:
+                        cstr=layer.bandStatistics(iband)
                     if has_stats:
                         self.ymin=min(self.ymin,cstr.minimumValue)
                         self.ymax=max(self.ymax,cstr.maximumValue)
