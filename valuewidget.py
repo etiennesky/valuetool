@@ -302,15 +302,18 @@ class ValueWidget(QWidget, Ui_Widget):
               ident = None
               if position is not None:
                 canvas = self.iface.mapCanvas()
-                extent = canvas.extent()
 
-                # TODO: how to get correct source (CRS) width/height
-                width = round(extent.width() / canvas.mapUnitsPerPixel());
-                height = round(extent.height() / canvas.mapUnitsPerPixel());
+                # we can only use context if layer is not projected
+                if canvas.hasCrsTransformEnabled() and layer.dataProvider().crs() != canvas.mapRenderer().destinationCrs():
+                  ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue )
+                else:
+                  extent = canvas.extent()
+                  width = round(extent.width() / canvas.mapUnitsPerPixel());
+                  height = round(extent.height() / canvas.mapUnitsPerPixel());
 
-                extent = canvas.mapRenderer().mapToLayerCoordinates( layer, extent );
+                  extent = canvas.mapRenderer().mapToLayerCoordinates( layer, extent );
 
-                ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height )
+                  ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height )
                 if not len( ident ) > 0:
                     continue
 
