@@ -254,7 +254,7 @@ class ValueWidget(QWidget, Ui_Widget):
               # check statistics for each band
               if needextremum:
                 for i in range( 1,layer.bandCount()+1 ):
-                  if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                  if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
                     has_stats=layer.dataProvider().hasStatistics(i)
                   else:
                     has_stats=layer.hasStatistics(i)
@@ -318,7 +318,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     continue
 
               # if given no position, set values to 0
-              if position is None:
+              if position is None and ident.iterkeys() is not None:
                   for key in ident.iterkeys():
                       ident[key] = layer.dataProvider().noDataValue(key)
 
@@ -339,15 +339,18 @@ class ValueWidget(QWidget, Ui_Widget):
                 self.values.append((layernamewithband,bandvalue))
 
                 if needextremum:
+                  if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
+                    has_stats=layer.dataProvider().hasStatistics(i)
+                  else:
                     has_stats=layer.hasStatistics(i)
-                    if has_stats:
-                        cstr=layer.bandStatistics(iband)
-                    if has_stats:
-                        self.ymin=min(self.ymin,cstr.minimumValue)
-                        self.ymax=max(self.ymax,cstr.maximumValue)
-                    else:
-                        self.ymin=min(self.ymin,layer.minimumValue(i))
-                        self.ymax=max(self.ymax,layer.maximumValue(i))
+                  if has_stats:
+                      cstr=layer.bandStatistics(iband)
+                  if has_stats:
+                      self.ymin=min(self.ymin,cstr.minimumValue)
+                      self.ymax=max(self.ymax,cstr.maximumValue)
+                  else:
+                      self.ymin=min(self.ymin,layer.minimumValue(i))
+                      self.ymax=max(self.ymax,layer.maximumValue(i))
 
             else: # QGIS < 1.9
               isok,ident = layer.identify(pos)
@@ -386,7 +389,7 @@ class ValueWidget(QWidget, Ui_Widget):
                   self.values.append((layernamewithband,bandvalue))
 
                   if needextremum:
-                      if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                      if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
                           has_stats=layer.dataProvider().hasStatistics(i)
                           if has_stats:
                               cstr=layer.dataProvider().bandStatistics(iband)
@@ -442,7 +445,7 @@ class ValueWidget(QWidget, Ui_Widget):
             if not layer.id() in self.layerMap:
                 self.layerMap[layer.id()] = True
                 for i in range( 1,layer.bandCount()+1 ):
-                    if int(QGis.QGIS_VERSION[2]) > 8: # for QGIS > 1.8
+                    if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
                         stat = layer.dataProvider().bandStatistics(i)
                     else:
                         stat = layer.bandStatistics(i)
