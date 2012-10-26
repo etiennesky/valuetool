@@ -318,13 +318,13 @@ class ValueWidget(QWidget, Ui_Widget):
                     continue
 
               # if given no position, set values to 0
-              if position is None and ident.iterkeys() is not None:
+              if position is None and ident is not None and ident.iterkeys() is not None:
                   for key in ident.iterkeys():
                       ident[key] = layer.dataProvider().noDataValue(key)
 
               for iband in range(1,layer.bandCount()+1): # loop over the bands
                 layernamewithband=layername
-                if len(ident)>1:
+                if ident is not None and len(ident)>1:
                     layernamewithband+=' '+layer.bandName(iband)
 
                 if not ident or not ident.has_key( iband ): # should not happen
