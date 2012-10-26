@@ -303,8 +303,14 @@ class ValueWidget(QWidget, Ui_Widget):
               if position is not None:
                 canvas = self.iface.mapCanvas()
 
+                # first test if point is within map layer extent 
+                # maintain same behaviour as in 1.8 and print out of extent
+                if not layer.dataProvider().extent().contains( pos ):
+                  ident = dict()
+                  for iband in range(1,layer.bandCount()+1):
+                    ident[iband] = str(self.tr('out of extent'))
                 # we can only use context if layer is not projected
-                if canvas.hasCrsTransformEnabled() and layer.dataProvider().crs() != canvas.mapRenderer().destinationCrs():
+                elif canvas.hasCrsTransformEnabled() and layer.dataProvider().crs() != canvas.mapRenderer().destinationCrs():
                   ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue )
                 else:
                   extent = canvas.extent()
@@ -329,12 +335,17 @@ class ValueWidget(QWidget, Ui_Widget):
 
                 if not ident or not ident.has_key( iband ): # should not happen
                   bandvalue = "?"
-                else: 
-                  doubleValue =  ident[iband].toDouble()[0]
-                  if layer.dataProvider().isNoDataValue ( iband, doubleValue ):  
-                    bandvalue = "no data"
+                else:
+                  # test if value is str (out of extent)
+                  # this is kind of contrived, but trying to minimize changes
+                  if isinstance(ident[iband], str):
+                    bandvalue = ident[iband]
                   else:
-                    bandvalue = QgsRasterBlock.printValue( doubleValue )
+                    doubleValue =  ident[iband].toDouble()[0]
+                    if layer.dataProvider().isNoDataValue ( iband, doubleValue ):  
+                      bandvalue = "no data"
+                    else:
+                      bandvalue = QgsRasterBlock.printValue( doubleValue )
 
                 self.values.append((layernamewithband,bandvalue))
 
