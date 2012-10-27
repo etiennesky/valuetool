@@ -59,6 +59,10 @@ class ValueWidget(QWidget, Ui_Widget):
         self.ymin=0
         self.ymax=250
 
+        # Statistics (>=1.9)
+        self.statsSampleSize = 2500000
+        self.stats = {} # stats per layer
+
         self.iface=iface
         self.canvas=self.iface.mapCanvas()
         self.legend=self.iface.legendInterface()
@@ -84,6 +88,9 @@ class ValueWidget(QWidget, Ui_Widget):
         # plot
         self.plotSelector.setVisible( False )
         self.cbxStats.setVisible( False )
+        if QGis.QGIS_VERSION_INT >= 10900:
+          # stats by default because estimated are fast
+          self.cbxStats.setChecked( True )
         self.graphControls.setVisible( False )
         if self.hasqwt:
             self.plotSelector.addItem( 'Qwt' )
@@ -151,7 +158,6 @@ class ValueWidget(QWidget, Ui_Widget):
 
         self.stackedWidget.setCurrentIndex(0)
 
-
     def disconnect(self):
         self.changeActive(False)
         QObject.disconnect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
@@ -189,7 +195,8 @@ class ValueWidget(QWidget, Ui_Widget):
                 self.stackedWidget.setCurrentIndex(1)
         else:
             self.plotSelector.setVisible( False )
-            self.cbxStats.setVisible( False )
+            if QGis.QGIS_VERSION_INT < 10900:
+              self.cbxStats.setVisible( False )
             self.graphControls.setVisible( False )
             self.stackedWidget.setCurrentIndex(0)
 
@@ -255,7 +262,7 @@ class ValueWidget(QWidget, Ui_Widget):
               if needextremum:
                 for i in range( 1,layer.bandCount()+1 ):
                   if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
-                    has_stats=layer.dataProvider().hasStatistics(i)
+                    has_stats = self.getStats ( layer, i ) is not None
                   else:
                     has_stats=layer.hasStatistics(i)
                   if not layer.id() in self.layerMap and not has_stats\
@@ -350,18 +357,11 @@ class ValueWidget(QWidget, Ui_Widget):
                 self.values.append((layernamewithband,bandvalue))
 
                 if needextremum:
-                  if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
-                    has_stats=layer.dataProvider().hasStatistics(i)
-                  else:
-                    has_stats=layer.hasStatistics(i)
-                  if has_stats:
-                      cstr=layer.bandStatistics(iband)
-                  if has_stats:
-                      self.ymin=min(self.ymin,cstr.minimumValue)
-                      self.ymax=max(self.ymax,cstr.maximumValue)
-                  else:
-                      self.ymin=min(self.ymin,layer.minimumValue(i))
-                      self.ymax=max(self.ymax,layer.maximumValue(i))
+                  # estimated statistics
+                  stats = self.getStats ( layer, iband )
+                  if stats:
+                    self.ymin=min(self.ymin,stats.minimumValue)
+                    self.ymax=max(self.ymax,stats.maximumValue)
 
             else: # QGIS < 1.9
               isok,ident = layer.identify(pos)
@@ -400,14 +400,9 @@ class ValueWidget(QWidget, Ui_Widget):
                   self.values.append((layernamewithband,bandvalue))
 
                   if needextremum:
-                      if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
-                          has_stats=layer.dataProvider().hasStatistics(i)
-                          if has_stats:
-                              cstr=layer.dataProvider().bandStatistics(iband)
-                      else:
-                          has_stats=layer.hasStatistics(i)
-                          if has_stats:
-                              cstr=layer.bandStatistics(iband)
+                      has_stats=layer.hasStatistics(i)
+                      if has_stats:
+                          cstr=layer.bandStatistics(iband)
                       if has_stats:
                           self.ymin=min(self.ymin,cstr.minimumValue)
                           self.ymax=max(self.ymax,cstr.maximumValue)
@@ -457,13 +452,26 @@ class ValueWidget(QWidget, Ui_Widget):
                 self.layerMap[layer.id()] = True
                 for i in range( 1,layer.bandCount()+1 ):
                     if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
-                        stat = layer.dataProvider().bandStatistics(i)
+                        self.getStats ( layer, i , True )
                     else:
                         stat = layer.bandStatistics(i)
 
         if save_state:
             self.changeActive(Qt.Checked) # activate if necessary
 
+    # get cached statistics for layer and band or None if not calculated
+    def getStats ( self, layer, bandNo, force = False ):
+      if self.stats.has_key( layer ):
+        if self.stats[layer].has_key( bandNo ) : 
+          return self.stats[layer][bandNo]
+      else:
+        self.stats[layer] = {}
+      
+      if force or layer.dataProvider().hasStatistics( bandNo, QgsRasterBandStats.Min | QgsRasterBandStats.Min, QgsRectangle(), self.statsSampleSize ):
+        self.stats[layer][bandNo] = layer.dataProvider().bandStatistics( bandNo, QgsRasterBandStats.Min | QgsRasterBandStats.Min, QgsRectangle(), self.statsSampleSize )
+        return self.stats[layer][bandNo]
+
+      return None
 
     def printInTable(self):
 
@@ -573,3 +581,4 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def resizeEvent(self, event):
         self.invalidatePlot()
+
