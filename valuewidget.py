@@ -478,6 +478,14 @@ class ValueWidget(QWidget, Ui_Widget):
         irow=0
         for row in self.values:
           layername,value=row
+          
+          # limit number of decimal places if requested
+          if self.cbxDigits.isChecked():
+              try:
+                  value = str("{0:."+str(self.spinBox.value())+"f}").format(float(value))
+              except ValueError:
+                  pass
+
           if (self.tableWidget.item(irow,0)==None):
               # create the item
               self.tableWidget.setItem(irow,0,QTableWidgetItem())
