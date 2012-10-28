@@ -27,7 +27,7 @@ def description():
   return 'Display in a table or plot the values from the visible raster layers at the current mouse position' 
 
 def version(): 
-  return 'Version 0.4.5'
+  return 'Version 0.5.0'
 
 def qgisMinimumVersion():
   return '1.0'

@@ -4,9 +4,9 @@ qgisMinimumVersion = 1.0
 description = Display in a table or plot the values from the visible raster 
 	layers at the current mouse position
 category = Raster
-version = version 0.4.5
+version = version 0.5.0
 ; optional metadata entries
-changelog = fix when matplotlib is not installed
+changelog = compatibility for latest master (1.9) and other fixes and enhancements
 tags = raster
 homepage = 
 tracker = 
