@@ -12,9 +12,9 @@ email=etourigny.dev@gmail.com
 ; optional metadata entries
 changelog = compatibility for latest master (1.9) and other fixes and enhancements
 tags = raster
-homepage = 
-tracker = 
-repository = 
+homepage = http://hub.qgis.org/projects/valuetool
+tracker = http://hub.qgis.org/projects/valuetool/issues
+repository = http://hub.qgis.org/projects/valuetool/repository
 icon = 
 experimental = False
 deprecated = False
