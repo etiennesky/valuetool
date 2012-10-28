@@ -38,6 +38,10 @@ def category():
 
 def authorName():
   return 'Ghislain Picard'
+def author():
+  return 'Ghislain Picard'
+def email():
+  return 'etourigny.dev@gmail.com'
 
 
 def classFactory(iface): 
