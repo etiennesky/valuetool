@@ -10,7 +10,10 @@ email=etourigny.dev@gmail.com
 ; original author is no longer contributing, current maintainer is Etienne Tourigny
 ; other authors include : Richard Duivenvoorde, Ricardo Silva, Etienne Tourigny, Radim Blazek
 ; optional metadata entries
-changelog = compatibility for latest master (1.9) and other fixes and enhancements
+changelog =
+0.5.1 fixes for api changes in 1.9
+0.5.0 compatibility for latest master (1.9) and other fixes and enhancements
+
 tags = raster
 homepage = http://hub.qgis.org/projects/valuetool
 tracker = http://hub.qgis.org/projects/valuetool/issues

@@ -280,14 +280,21 @@ class ValueWidget(QWidget, Ui_Widget):
         self.ymin=1e38
         self.ymax=-1e38
 
-        mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationSrs()
+        if QGis.QGIS_VERSION_INT >= 10900:
+            mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationCrs()
+        else:
+            mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationSrs()
 
         # TODO - calculate the min/max values only once, instead of every time!!!
         # keep them in a dict() with key=layer.id()
                 
         for layer in rasterlayers:
             layername=unicode(layer.name())
-            layerSrs = layer.srs()
+            if QGis.QGIS_VERSION_INT >= 10900:
+                layerSrs = layer.crs()
+            else:
+                layerSrs = layer.srs()
+
             pos = position         
 
             # if given no position, get dummy values
