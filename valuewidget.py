@@ -325,7 +325,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     ident[iband] = str(self.tr('out of extent'))
                 # we can only use context if layer is not projected
                 elif canvas.hasCrsTransformEnabled() and layer.dataProvider().crs() != canvas.mapRenderer().destinationCrs():
-                  ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue )
+                  ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue ).results()
                 else:
                   extent = canvas.extent()
                   width = round(extent.width() / canvas.mapUnitsPerPixel());
@@ -333,7 +333,7 @@ class ValueWidget(QWidget, Ui_Widget):
 
                   extent = canvas.mapRenderer().mapToLayerCoordinates( layer, extent );
 
-                  ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height )
+                  ident = layer.dataProvider().identify(pos, QgsRasterDataProvider.IdentifyFormatValue, canvas.extent(), width, height ).results()
                 if not len( ident ) > 0:
                     continue
 
