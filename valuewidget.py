@@ -355,10 +355,10 @@ class ValueWidget(QWidget, Ui_Widget):
                   if isinstance(ident[iband], str):
                     bandvalue = ident[iband]
                   else:
-                    doubleValue =  ident[iband].toDouble()[0]
-                    if layer.dataProvider().isNoDataValue ( iband, doubleValue ):  
+                    if ident[iband].isNull():
                       bandvalue = "no data"
                     else:
+                      doubleValue =  ident[iband].toDouble()[0]
                       bandvalue = QgsRasterBlock.printValue( doubleValue )
 
                 self.values.append((layernamewithband,bandvalue))
