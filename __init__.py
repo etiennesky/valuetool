@@ -19,34 +19,8 @@
 """
 # load valuetool class from file valuetool.py
 
-
-def name(): 
-  return 'Value Tool'
-
-def description():
-  return 'Display in a table or plot the values from the visible raster layers at the current mouse position' 
-
-def version(): 
-  return 'Version 0.5.4'
-
-def qgisMinimumVersion():
-  return '1.9'
-
-def category():
-    return 'Raster'
-
-def authorName():
-  return 'Ghislain Picard'
-def author():
-  return 'Ghislain Picard'
-def email():
-  return 'etourigny.dev@gmail.com'
-
-
 def classFactory(iface): 
   from valuetool import ValueTool
   return ValueTool(iface)
-
-
 
 # Display the values of the raster layers at the current mouse position. Values are printed in a table or plotted on a graph. The plugin is dockable like overview or coordinate capture, go to View/Panels to activate it.

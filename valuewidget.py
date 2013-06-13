@@ -172,10 +172,10 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def keyPressEvent( self, e ):
       if ( e.modifiers() == Qt.ControlModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_C:
-        items = QString()
+        items = ''
         for rec in range( self.tableWidget.rowCount() ):
-          items.append( '"' + self.tableWidget.item( rec, 0 ).text() + '",' + self.tableWidget.item( rec, 1 ).text() + "\n" )
-        if not items.isEmpty():
+          items += '"' + self.tableWidget.item( rec, 0 ).text() + '",' + self.tableWidget.item( rec, 1 ).text() + "\n"
+        if not items == '':
           clipboard = QApplication.clipboard()
           clipboard.setText( items )
       elif (self.pauseDisplay(e)):
@@ -350,18 +350,11 @@ class ValueWidget(QWidget, Ui_Widget):
                 if not ident or not ident.has_key( iband ): # should not happen
                   bandvalue = "?"
                 else:
-                  # test if value is str (out of extent)
-                  # this is kind of contrived, but trying to minimize changes
-                  if isinstance(ident[iband], str):
-                    bandvalue = ident[iband]
-                  else:
-                    if ident[iband].isNull():
+                  bandvalue = ident[iband]
+                  if bandvalue is None:
                       bandvalue = "no data"
-                    else:
-                      doubleValue =  ident[iband].toDouble()[0]
-                      bandvalue = QgsRasterBlock.printValue( doubleValue )
 
-                self.values.append((layernamewithband,bandvalue))
+                self.values.append((layernamewithband,str(bandvalue)))
 
                 if needextremum:
                   # estimated statistics
@@ -381,21 +374,20 @@ class ValueWidget(QWidget, Ui_Widget):
                       ident[key] = 0
 
               if layer.providerKey()=="grassraster":
-                if not ident.has_key(QString("value")):
+                if not ident.has_key("value"):
                   continue
-                cstr = ident[QString("value")]
-                if cstr.isNull():
+                value = ident["value"]
+                if value is None:
                   continue
-                value = cstr.toDouble()
-                if not value[1]:
+                if isinstance(value, str):
                   # if this is not a double, it is probably a (GRASS string like
                   # 'out of extent' or 'null (no data)'. Let's just show that:
-                  self.values.append((layername, cstr))
+                  self.values.append((layername, value))
                   continue
-                self.values.append((layername,cstr))
+                self.values.append((layername,value))
                 if needextremum:
-                  self.ymin = min(self.ymin,value[0])
-                  self.ymax = max(self.ymax,value[0])
+                  self.ymin = min(self.ymin,value)
+                  self.ymax = max(self.ymax,value)
 
               else:
                 for iband in range(1,layer.bandCount()+1): # loop over the bands
@@ -432,10 +424,10 @@ class ValueWidget(QWidget, Ui_Widget):
 
         self.statsChecked = True
 
-        layerNames = QStringList()
+        layerNames = []
         for layer in layersWOStatistics:
             if not layer.id() in self.layerMap:
-                layerNames << layer.name()
+                layerNames.append(layer.name())
 
         if ( len(layerNames) != 0 ):
 #            res = QMessageBox.warning( self, self.tr( 'Warning' ),
