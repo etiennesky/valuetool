@@ -208,13 +208,13 @@ class ValueWidget(QWidget, Ui_Widget):
             #QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
             #QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            if int(QGis.QGIS_VERSION[2]) > 2: # for QGIS >= 1.3
+            if QGis.QGIS_VERSION_INT >= 10300: # for QGIS >= 1.3
                 QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
             else:
                 QObject.connect(self.canvas, SIGNAL("xyCoordinates(QgsPoint &)"), self.printValue)
         else:
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            if int(QGis.QGIS_VERSION[2]) > 2: # for QGIS >= 1.3
+            if QGis.QGIS_VERSION_INT >= 10300: # for QGIS >= 1.3
                 QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
             else:
                 QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(QgsPoint &)"), self.printValue)
