@@ -190,6 +190,8 @@ class ValueWidget(QWidget, Ui_Widget):
 
 
     def changePage(self,state):
+        self.cbxDigits.setEnabled(state!=Qt.Checked)
+        self.spinDigits.setEnabled(state!=Qt.Checked)
         if (state==Qt.Checked):
             self.plotSelector.setVisible( True )
             self.cbxStats.setVisible( True )
@@ -493,7 +495,7 @@ class ValueWidget(QWidget, Ui_Widget):
           # limit number of decimal places if requested
           if self.cbxDigits.isChecked():
               try:
-                  value = str("{0:."+str(self.spinBox.value())+"f}").format(float(value))
+                  value = str("{0:."+str(self.spinDigits.value())+"f}").format(float(value))
               except ValueError:
                   pass
 

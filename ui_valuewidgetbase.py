@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Mon Feb 17 17:46:44 2014
+# Created: Mon Feb 17 17:48:33 2014
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -59,16 +59,16 @@ class Ui_ValueWidgetBase(object):
         self.cbxDigits = QtGui.QCheckBox(ValueWidgetBase)
         self.cbxDigits.setObjectName(_fromUtf8("cbxDigits"))
         self.horizontalLayout_3.addWidget(self.cbxDigits)
-        self.spinBox = QtGui.QSpinBox(ValueWidgetBase)
+        self.spinDigits = QtGui.QSpinBox(ValueWidgetBase)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.spinBox.sizePolicy().hasHeightForWidth())
-        self.spinBox.setSizePolicy(sizePolicy)
-        self.spinBox.setMaximum(99)
-        self.spinBox.setProperty("value", 2)
-        self.spinBox.setObjectName(_fromUtf8("spinBox"))
-        self.horizontalLayout_3.addWidget(self.spinBox)
+        sizePolicy.setHeightForWidth(self.spinDigits.sizePolicy().hasHeightForWidth())
+        self.spinDigits.setSizePolicy(sizePolicy)
+        self.spinDigits.setMaximum(99)
+        self.spinDigits.setProperty("value", 2)
+        self.spinDigits.setObjectName(_fromUtf8("spinDigits"))
+        self.horizontalLayout_3.addWidget(self.spinDigits)
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
