@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>336</width>
-    <height>153</height>
+    <width>321</width>
+    <height>213</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,9 @@
       <widget class="QCheckBox" name="cbxActive">
        <property name="toolTip">
         <string>(Shift+A) to toggle</string>
+       </property>
+       <property name="statusTip">
+        <string>Check to activate value tool</string>
        </property>
        <property name="text">
         <string>Active</string>
@@ -34,7 +37,57 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="cbxActiveBands">
+       <property name="toolTip">
+        <string>If checked, only display values of bands which are used by rendererer (defined in raster style)</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>Use active bands only</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QCheckBox" name="cbxGraph">
+       <property name="toolTip">
+        <string>Show graph instead of table</string>
+       </property>
+       <property name="text">
+        <string>Show graph</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QCheckBox" name="cbxDigits">
+       <property name="toolTip">
+        <string>Specify how many digits to show in table</string>
+       </property>
        <property name="text">
         <string>Decimals</string>
        </property>
@@ -57,21 +110,7 @@
       </widget>
      </item>
      <item>
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cbxGraph">
-       <property name="text">
-        <string>Graph</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>

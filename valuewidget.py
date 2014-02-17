@@ -73,6 +73,11 @@ class ValueWidget(QWidget, Ui_Widget):
         self.setupUi(self)
         self.setupUi_extra()
 
+        if QGis.QGIS_VERSION_INT < 10900:
+            self.cbxActiveBands.setDisabled(True)
+            self.cbxActiveBands.setChecked(False)
+            self.cbxActiveBands.setVisible(False)
+
         QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
         QObject.connect(self.cbxGraph,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
@@ -272,9 +277,6 @@ class ValueWidget(QWidget, Ui_Widget):
         if layersWOStatistics and not self.statsChecked:
           self.calculateStatistics(layersWOStatistics)
                   
-        # create the row if necessary
-        self.tableWidget.setRowCount(nrow)
-
         irow=0
         self.values=[]
         self.ymin=1e38
@@ -342,7 +344,14 @@ class ValueWidget(QWidget, Ui_Widget):
                   for key in ident.iterkeys():
                       ident[key] = layer.dataProvider().noDataValue(key)
 
-              for iband in range(1,layer.bandCount()+1): # loop over the bands
+              # if cbxActiveBands is checked, only use active bands (those used by renderer)
+              # if not, use all bands
+              if self.cbxActiveBands.isChecked() and layer.renderer():
+                  activeBands = layer.renderer().usesBands()                 
+              else:
+                  activeBands = range(1,layer.bandCount()+1)
+                  
+              for iband in activeBands: # loop over the active bands
                 layernamewithband=layername
                 if ident is not None and len(ident)>1:
                     layernamewithband+=' '+layer.bandName(iband)
@@ -353,7 +362,7 @@ class ValueWidget(QWidget, Ui_Widget):
                   bandvalue = ident[iband]
                   if bandvalue is None:
                       bandvalue = "no data"
-
+             
                 self.values.append((layernamewithband,str(bandvalue)))
 
                 if needextremum:
@@ -473,6 +482,9 @@ class ValueWidget(QWidget, Ui_Widget):
       return None
 
     def printInTable(self):
+
+        # set table widget row count
+        self.tableWidget.setRowCount(len(self.values))
 
         irow=0
         for row in self.values:
