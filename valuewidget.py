@@ -74,31 +74,26 @@ class ValueWidget(QWidget, Ui_Widget):
         self.setupUi_extra()
 
         QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
-        QObject.connect(self.cbxGraph,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
+        #QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateBands )
+        #QObject.connect(self.modelLayers, SIGNAL( "dataChanged ( QModelIndex, QModelIndex )" ), self.updateBands2)
 
     def setupUi_extra(self):
-
-        # checkboxes
-        #self.changeActive(Qt.Checked)
-        #set inactive by default - should save last state in user config
-        self.cbxActive.setCheckState(Qt.Unchecked)
 
         # plot
         self.plotSelector.setVisible( False )
         self.cbxStats.setVisible( False )
         # stats by default because estimated are fast
         self.cbxStats.setChecked( True )
-        self.graphControls.setVisible( False )
         if self.hasqwt:
             self.plotSelector.addItem( 'Qwt' )
         if self.hasmpl:
             self.plotSelector.addItem( 'mpl' )
         self.plotSelector.setCurrentIndex( 0 );
-        if (not self.hasqwt or not self.hasmpl):
-            #self.plotSelector.setVisible(False)
-            self.plotSelector.setEnabled(False)
+        if (self.hasqwt and self.hasmpl):
+            self.plotSelector.setEnabled(True)
+            self.plotSelector.setVisible(True)
 
         # Page 2 - qwt
         if self.hasqwt:
@@ -112,7 +107,6 @@ class ValueWidget(QWidget, Ui_Widget):
                           QPen(Qt.red, 2),
                           QSize(9, 9)))
             self.curve.attach(self.qwtPlot)
-            self.qwtPlot.setVisible(False)
         else:
             self.qwtPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
@@ -121,7 +115,6 @@ class ValueWidget(QWidget, Ui_Widget):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.qwtPlot.sizePolicy().hasHeightForWidth())
         self.qwtPlot.setSizePolicy(sizePolicy)
-        self.qwtPlot.setObjectName("qwtPlot")
         self.qwtPlot.updateGeometry()
         self.stackedWidget.addWidget(self.qwtPlot)
 
@@ -142,7 +135,6 @@ class ValueWidget(QWidget, Ui_Widget):
             self.pltCanvas.setAutoFillBackground(False)
             self.pltCanvas.setObjectName("mplPlot")
             self.mplPlot = self.pltCanvas
-            self.mplPlot.setVisible(False)
         else:
             self.mplPlot = QtGui.QLabel("Need Qwt >= 5.0 or matplotlib >= 1.0 !")
 
@@ -151,7 +143,6 @@ class ValueWidget(QWidget, Ui_Widget):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.mplPlot.sizePolicy().hasHeightForWidth())
         self.mplPlot.setSizePolicy(sizePolicy)
-        self.qwtPlot.setObjectName("qwtPlot")
         self.mplPlot.updateGeometry()
         self.stackedWidget.addWidget(self.mplPlot)
 
@@ -183,24 +174,11 @@ class ValueWidget(QWidget, Ui_Widget):
         QWidget.keyPressEvent( self, e )
 
 
-    def changePage(self,state):
-        self.cbxDigits.setEnabled(state!=Qt.Checked)
-        self.spinDigits.setEnabled(state!=Qt.Checked)
-        if (state==Qt.Checked):
-            self.plotSelector.setVisible( True )
-            self.cbxStats.setVisible( True )
-            self.graphControls.setVisible( True )
-            if (self.plotSelector.currentText()=='mpl'):
-                self.stackedWidget.setCurrentIndex(2)
-            else:
-                self.stackedWidget.setCurrentIndex(1)
-        else:
-            self.plotSelector.setVisible( False )
-            self.graphControls.setVisible( False )
-            self.stackedWidget.setCurrentIndex(0)
-
     def changePlot(self):
-        self.changePage(self.cbxActive.checkState())
+        if (self.plotSelector.currentText()=='mpl'):
+            self.stackedWidget.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(0)
 
     def changeActive(self,state):
         if (state==Qt.Checked):
@@ -211,42 +189,52 @@ class ValueWidget(QWidget, Ui_Widget):
         else:
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
+        #self.invalidatePlot() - TODO bring this back?
 
+    def activeRasterLayers(self):
+        layers=[]
+        allLayers=[]
+        if self.cbxLayers.currentIndex() == 0:
+            allLayers=self.canvas.layers()
+        elif self.cbxLayers.currentIndex() == 1:
+            allLayers=self.legend.layers()
+        # TODO update this
+        for layer in allLayers:
+            if layer!=None and layer.isValid() and \
+                    layer.type()==QgsMapLayer.RasterLayer and \
+                    layer.dataProvider() and \
+                    (layer.dataProvider().capabilities() & QgsRasterDataProvider.IdentifyValue):
+                  layers.append(layer)
+
+        return layers
 
     def printValue(self,position):
-
+        if self.tabWidget.currentIndex()==2:
+            return
         if self.canvas.layerCount() == 0:
             self.values=[]         
             self.showValues()
             return
         
-        needextremum = self.cbxGraph.isChecked() # if plot is checked
+        needextremum = (self.tabWidget.currentIndex()==1) # if plot is shown
 
         # count the number of requires rows and remember the raster layers
         nrow=0
         rasterlayers=[]
         layersWOStatistics=[]
 
-        for i in range(self.canvas.layerCount()):
-            layer = self.canvas.layer(i)
-            if (layer!=None and layer.isValid() and layer.type()==QgsMapLayer.RasterLayer):
-              if True: # for QGIS >= 1.9
-                if not layer.dataProvider():
-                  continue
+        for layer in self.activeRasterLayers():
 
-                if not layer.dataProvider().capabilities() & QgsRasterDataProvider.IdentifyValue:
-                  continue
+            nrow+=layer.bandCount()
+            rasterlayers.append(layer)
 
-                nrow+=layer.bandCount()
-                rasterlayers.append(layer)
-
-              # check statistics for each band
-              if needextremum:
+            # check statistics for each band
+            if needextremum:
                 for i in range( 1,layer.bandCount()+1 ):
-                  has_stats = self.getStats ( layer, i ) is not None
-                  if not layer.id() in self.layerMap and not has_stats\
-                          and not layer in layersWOStatistics:
-                    layersWOStatistics.append(layer)
+                    has_stats = self.getStats ( layer, i ) is not None
+                    if not layer.id() in self.layerMap and not has_stats\
+                            and not layer in layersWOStatistics:
+                        layersWOStatistics.append(layer)
 
         if layersWOStatistics and not self.statsChecked:
           self.calculateStatistics(layersWOStatistics)
@@ -312,10 +300,11 @@ class ValueWidget(QWidget, Ui_Widget):
                   for key in ident.iterkeys():
                       ident[key] = layer.dataProvider().noDataValue(key)
 
-              # if cbxActiveBands is checked, only use active bands (those used by renderer)
-              # if not, use all bands
-              if self.cbxActiveBands.isChecked() and layer.renderer():
+              # bands displayed depends on cbxBands (all / active / selected)
+              if self.cbxBands.currentIndex() == 1 and layer.renderer():
                   activeBands = layer.renderer().usesBands()                 
+              elif self.cbxBands.currentIndex() == 2:
+                  activeBands = [] # TODO update this
               else:
                   activeBands = range(1,layer.bandCount()+1)
                   
@@ -343,7 +332,7 @@ class ValueWidget(QWidget, Ui_Widget):
         self.showValues()
 
     def showValues(self):
-        if self.cbxGraph.isChecked():
+        if self.tabWidget.currentIndex()==1:
             #TODO don't plot if there is no data to plot...
             self.plot()
         else:
@@ -466,15 +455,17 @@ class ValueWidget(QWidget, Ui_Widget):
         self.invalidatePlot()
 
     def invalidatePlot(self,replot=True):
+        if not self.cbxActive.isChecked():
+            return
         self.statsChecked = False
         if self.mplLine is not None:
             del self.mplLine
             self.mplLine = None
         #update empty plot
-        if replot and self.cbxGraph.isChecked():
+        if replot and self.tabWidget.currentIndex()==1:
             #self.values=[]
             self.printValue( None )
-
+ 
     def resizeEvent(self, event):
         self.invalidatePlot()
 
