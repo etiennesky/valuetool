@@ -73,11 +73,6 @@ class ValueWidget(QWidget, Ui_Widget):
         self.setupUi(self)
         self.setupUi_extra()
 
-        if QGis.QGIS_VERSION_INT < 10900:
-            self.cbxActiveBands.setDisabled(True)
-            self.cbxActiveBands.setChecked(False)
-            self.cbxActiveBands.setVisible(False)
-
         QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
         QObject.connect(self.cbxGraph,SIGNAL("stateChanged(int)"),self.changePage)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
@@ -93,9 +88,8 @@ class ValueWidget(QWidget, Ui_Widget):
         # plot
         self.plotSelector.setVisible( False )
         self.cbxStats.setVisible( False )
-        if QGis.QGIS_VERSION_INT >= 10900:
-          # stats by default because estimated are fast
-          self.cbxStats.setChecked( True )
+        # stats by default because estimated are fast
+        self.cbxStats.setChecked( True )
         self.graphControls.setVisible( False )
         if self.hasqwt:
             self.plotSelector.addItem( 'Qwt' )
@@ -202,8 +196,6 @@ class ValueWidget(QWidget, Ui_Widget):
                 self.stackedWidget.setCurrentIndex(1)
         else:
             self.plotSelector.setVisible( False )
-            if QGis.QGIS_VERSION_INT < 10900:
-              self.cbxStats.setVisible( False )
             self.graphControls.setVisible( False )
             self.stackedWidget.setCurrentIndex(0)
 
@@ -215,16 +207,10 @@ class ValueWidget(QWidget, Ui_Widget):
             #QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
             #QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            if QGis.QGIS_VERSION_INT >= 10300: # for QGIS >= 1.3
-                QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
-            else:
-                QObject.connect(self.canvas, SIGNAL("xyCoordinates(QgsPoint &)"), self.printValue)
+            QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
         else:
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            if QGis.QGIS_VERSION_INT >= 10300: # for QGIS >= 1.3
-                QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
-            else:
-                QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(QgsPoint &)"), self.printValue)
+            QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
 
 
     def printValue(self,position):
@@ -244,7 +230,7 @@ class ValueWidget(QWidget, Ui_Widget):
         for i in range(self.canvas.layerCount()):
             layer = self.canvas.layer(i)
             if (layer!=None and layer.isValid() and layer.type()==QgsMapLayer.RasterLayer):
-              if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
+              if True: # for QGIS >= 1.9
                 if not layer.dataProvider():
                   continue
 
@@ -254,24 +240,10 @@ class ValueWidget(QWidget, Ui_Widget):
                 nrow+=layer.bandCount()
                 rasterlayers.append(layer)
 
-              else: # < 1.9
-                if layer.providerKey()=="wms":
-                  continue
-
-                if layer.providerKey()=="grassraster":
-                  nrow+=1
-                  rasterlayers.append(layer)
-                else: # normal raster layer
-                  nrow+=layer.bandCount()
-                  rasterlayers.append(layer)
-                
               # check statistics for each band
               if needextremum:
                 for i in range( 1,layer.bandCount()+1 ):
-                  if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
-                    has_stats = self.getStats ( layer, i ) is not None
-                  else:
-                    has_stats=layer.hasStatistics(i)
+                  has_stats = self.getStats ( layer, i ) is not None
                   if not layer.id() in self.layerMap and not has_stats\
                           and not layer in layersWOStatistics:
                     layersWOStatistics.append(layer)
@@ -284,20 +256,14 @@ class ValueWidget(QWidget, Ui_Widget):
         self.ymin=1e38
         self.ymax=-1e38
 
-        if QGis.QGIS_VERSION_INT >= 10900:
-            mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationCrs()
-        else:
-            mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationSrs()
+        mapCanvasSrs = self.iface.mapCanvas().mapRenderer().destinationCrs()
 
         # TODO - calculate the min/max values only once, instead of every time!!!
         # keep them in a dict() with key=layer.id()
                 
         for layer in rasterlayers:
             layername=unicode(layer.name())
-            if QGis.QGIS_VERSION_INT >= 10900:
-                layerSrs = layer.crs()
-            else:
-                layerSrs = layer.srs()
+            layerSrs = layer.crs()
 
             pos = position         
 
@@ -313,7 +279,7 @@ class ValueWidget(QWidget, Ui_Widget):
                 # ignore transformation errors
                 continue
 
-            if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
+            if True: # for QGIS >= 1.9
               if not layer.dataProvider():
                 continue
 
@@ -374,52 +340,6 @@ class ValueWidget(QWidget, Ui_Widget):
                     self.ymin=min(self.ymin,stats.minimumValue)
                     self.ymax=max(self.ymax,stats.maximumValue)
 
-            else: # QGIS < 1.9
-              isok,ident = layer.identify(pos)
-              if not isok:
-                  continue
-
-              # if given no position, set values to 0
-              if position is None:
-                  for key in ident.iterkeys():
-                      ident[key] = 0
-
-              if layer.providerKey()=="grassraster":
-                if not ident.has_key("value"):
-                  continue
-                value = ident["value"]
-                if value is None:
-                  continue
-                if isinstance(value, str):
-                  # if this is not a double, it is probably a (GRASS string like
-                  # 'out of extent' or 'null (no data)'. Let's just show that:
-                  self.values.append((layername, value))
-                  continue
-                self.values.append((layername,value))
-                if needextremum:
-                  self.ymin = min(self.ymin,value)
-                  self.ymax = max(self.ymax,value)
-
-              else:
-                for iband in range(1,layer.bandCount()+1): # loop over the bands
-                  bandvalue=ident[layer.bandName(iband)]
-                  layernamewithband=layername
-                  if len(ident)>1:
-                      layernamewithband+=' '+layer.bandName(iband)
-
-                  self.values.append((layernamewithband,bandvalue))
-
-                  if needextremum:
-                      has_stats=layer.hasStatistics(i)
-                      if has_stats:
-                          cstr=layer.bandStatistics(iband)
-                      if has_stats:
-                          self.ymin=min(self.ymin,cstr.minimumValue)
-                          self.ymax=max(self.ymax,cstr.maximumValue)
-                      else:
-                          self.ymin=min(self.ymin,layer.minimumValue(i))
-                          self.ymax=max(self.ymax,layer.maximumValue(i))
-
         self.showValues()
 
     def showValues(self):
@@ -461,10 +381,7 @@ class ValueWidget(QWidget, Ui_Widget):
             if not layer.id() in self.layerMap:
                 self.layerMap[layer.id()] = True
                 for i in range( 1,layer.bandCount()+1 ):
-                    if QGis.QGIS_VERSION_INT >= 10900: # for QGIS >= 1.9
-                        self.getStats ( layer, i , True )
-                    else:
-                        stat = layer.bandStatistics(i)
+                    self.getStats ( layer, i , True )
 
         if save_state:
             self.changeActive(Qt.Checked) # activate if necessary
