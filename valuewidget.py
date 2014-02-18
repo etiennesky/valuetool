@@ -361,10 +361,6 @@ class ValueWidget(QWidget, Ui_Widget):
                 layerNames.append(layer.name())
 
         if ( len(layerNames) != 0 ):
-#            res = QMessageBox.warning( self, self.tr( 'Warning' ),
-#                                       self.tr( 'There are no statistics in the following rasters:\n%1\n\nCalculate?' ).arg(layerNames.join('\n')),
-#                                       QMessageBox.Yes | QMessageBox.No )
-#            if res != QMessageBox.Yes:
             if not self.cbxStats.isChecked():
                 #self.cbxActive.setCheckState(Qt.Unchecked)  
                 for layer in layersWOStatistics:
@@ -464,44 +460,6 @@ class ValueWidget(QWidget, Ui_Widget):
             self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
             self.mplPlt.set_ylim( (ymin, ymax) ) 
             self.mplFig.canvas.draw()
-
-            #disable optimizations - too many bugs, depending on mpl version!
-#            if self.mplLine is None:
-#                self.mplPlt.clear()
-#                self.mplLine, = self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b', animated=True)
-#                self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-#                self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())
-#                self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
-#                self.mplPlt.set_ylim( (self.ymin, self.ymax) )
-#                self.mplFig.canvas.draw()
-#                self.mplBackground = self.mplFig.canvas.copy_from_bbox(self.mplFig.bbox)
-#            else:
-#                # restore the clean slate background
-#                self.mplFig.canvas.restore_region(self.mplBackground)
-#                # update the data
-#                self.mplLine.set_xdata(range(1,len(numvalues)+1))
-#                self.mplLine.set_ydata(numvalues)
-#                self.mplPlt.draw_artist(self.mplLine)
-#                # just redraw the axes rectangle
-#                self.mplFig.canvas.blit(self.mplFig.bbox)
-#            self.mplPlot.setVisible(len(numvalues)>0)
-
-        #try:
-                #    attr = float(ident[j])
-                #except:
-                #    attr = 0
-                #    print "Null cell value catched as zero!"  # For none values, profile height = 0. It's not elegant...
-
-                    #nr = rastLayer.getRasterBandNumber(self.rastItems[field[1]][field[2]][0])
-
-                    #print ident
-            #for j in ident:
-                #print j
-                #if j.right(1) == str(nr):
-       #attr = int(ident[j])
-       #attr = float(ident[j])  ##### I MUST IMPLEMENT RASTER TYPE HANDLING!!!!
-       #outFeat.addAttribute(i, QVariant(attr))
-
 
     def statsNeedChecked(self, indx):
         #self.statsChecked = False
