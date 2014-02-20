@@ -547,6 +547,8 @@ class ValueWidget(QWidget, Ui_Widget):
             QObject.connect(group, SIGNAL("triggered(QAction*)"), self.bandSelected)
             if self.cbxBands.currentIndex()==2 and layer.bandCount()>1:
                 menu=QMenu()
+                menu.installEventFilter(self)
+
                 for iband in range(1,layer.bandCount()+1):
                     action = QAction(str(layer.bandName(iband)),group)
                     action.setData([layer.id(),iband,j,False])
@@ -561,7 +563,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     action = QAction(str(self.tr("None")),group)
                     action.setData([layer.id(),-1,j,False])
                     action.setCheckable(False)
-                menu.addAction(action)
+                    menu.addAction(action)
 
                 button.setMenu(menu)
             else:
@@ -593,30 +595,53 @@ class ValueWidget(QWidget, Ui_Widget):
         layerID=action.data()[0]
         layerBand=action.data()[1]
         j=action.data()[2]
+        toggleAll=action.data()[3]
+        activeBands = self.layerBands[layerID] if (layerID in self.layerBands) else []
 
         # special actions All/None
         if layerBand == -1:
             for layer in self.legend.layers():
                 if layer.id() == layerID:
-                    if action.data()[3]:
+                    if toggleAll:
                         activeBands = range(1,layer.bandCount()+1)
                     else:
                         activeBands = []
-            self.layerBands[layerID]=activeBands
-            self.updateLayers()
-            return
+                    # toggle all band# actions
+                    group=action.parent()
+                    if group and not isinstance(group, QtGui.QActionGroup):
+                        group=None
+                    if group:
+                        group.blockSignals(True)
+                        for a in group.actions():
+                            if a.isCheckable():
+                                a.setChecked(toggleAll)
+                        group.blockSignals(False)
 
         # any Band# action
-        activeBands = self.layerBands[layerID] if (layerID in self.layerBands) else []
-        if action.isChecked():
-            activeBands.append(layerBand)
         else:
-            if layerBand in activeBands:
-                activeBands.remove(layerBand)
+            if action.isChecked():
+                activeBands.append(layerBand)
+            else:
+                if layerBand in activeBands:
+                    activeBands.remove(layerBand)
+            activeBands.sort()
 
-        activeBands.sort()
         self.layerBands[layerID]=activeBands
 
+        # update UI
         item = QTableWidgetItem(str(activeBands))
         item.setToolTip(str(activeBands))
         self.tableWidget2.setItem(j, 3, item)
+
+
+    # event filter for band selection menu, do not close after toggling each band
+    def eventFilter(self, obj, event):
+        if event.type() in [QtCore.QEvent.MouseButtonRelease]:
+            if isinstance(obj, QtGui.QMenu):
+                if obj.activeAction():
+                    if not obj.activeAction().menu(): #if the selected action does not have a submenu
+                        #eat the event, but trigger the function
+                        obj.activeAction().trigger()
+                        return True    
+        return super(ValueWidget, self).eventFilter(obj, event)
+
