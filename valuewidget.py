@@ -83,10 +83,10 @@ class ValueWidget(QWidget, Ui_Widget):
         QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.cbxBands, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.tableWidget2, SIGNAL("cellChanged ( int , int )"), self.layerSelected)
-        #QObject.connect(self.modelLayers, SIGNAL( "dataChanged ( QModelIndex, QModelIndex )" ), self.updateBands2)
 
     def setupUi_extra(self):
 
+        self.tabWidget.setEnabled(False)
         # plot
         self.plotSelector.setVisible( False )
         self.cbxStats.setVisible( False )
@@ -155,16 +155,14 @@ class ValueWidget(QWidget, Ui_Widget):
         self.stackedWidget.setCurrentIndex(0)
 
     def disconnect(self):
-        self.changeActive(False)
+        self.changeActive(Qt.Unchecked)
         QObject.disconnect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
     
     def pauseDisplay(self,e):
       if ( e.modifiers() == Qt.ShiftModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_A:
-
         self.cbxActive.toggle()
         return True
       return False
-
 
     def keyPressEvent( self, e ):
       if ( e.modifiers() == Qt.ControlModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_C:
@@ -179,25 +177,29 @@ class ValueWidget(QWidget, Ui_Widget):
       else:
         QWidget.keyPressEvent( self, e )
 
-
     def changePlot(self):
         if (self.plotSelector.currentText()=='mpl'):
             self.stackedWidget.setCurrentIndex(1)
         else:
             self.stackedWidget.setCurrentIndex(0)
 
-    def changeActive(self,state):
+    def changeActive(self,state,gui=True):
         if (state==Qt.Checked):
-            #QObject.connect(self.legend, SIGNAL( "itemAdded ( QModelIndex )" ), self.statsNeedChecked )
-            #QObject.connect(self.legend, SIGNAL( "itemRemoved ()" ), self.invalidatePlot )
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
         else:
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
 
-        if self.tabWidget.currentIndex()==2:
-            self.updateLayers()
+        if gui:
+            self.tabWidget.setEnabled(state==Qt.Checked)
+            if state==Qt.Checked:
+                self.labelStatus.setText(self.tr("Value tool is enabled"))
+                if self.tabWidget.currentIndex()==2:
+                    self.updateLayers()
+            else:
+                self.labelStatus.setText(self.tr(""))
+
 
     def activeRasterLayers(self, index=None):
         layers=[]
@@ -241,11 +243,19 @@ class ValueWidget(QWidget, Ui_Widget):
     def printValue(self,position):
         if self.tabWidget.currentIndex()==2:
             return
-        if self.canvas.layerCount() == 0:
+
+        layers = self.activeRasterLayers()
+        if len(layers) == 0:
+            if self.canvas.layerCount() > 0:
+                self.labelStatus.setText(self.tr("No valid layers to display - change layers in options"))
+            else:
+                self.labelStatus.setText(self.tr("No valid layers to display"))
             self.values=[]         
             self.showValues()
             return
         
+        self.labelStatus.setText(self.tr(""))
+
         needextremum = (self.tabWidget.currentIndex()==1) # if plot is shown
 
         # count the number of requires rows and remember the raster layers
@@ -253,7 +263,7 @@ class ValueWidget(QWidget, Ui_Widget):
         rasterlayers=[]
         layersWOStatistics=[]
 
-        for layer in self.activeRasterLayers():
+        for layer in layers:
 
             nrow+=layer.bandCount()
             rasterlayers.append(layer)
@@ -354,6 +364,9 @@ class ValueWidget(QWidget, Ui_Widget):
                     self.ymin=min(self.ymin,stats.minimumValue)
                     self.ymax=max(self.ymax,stats.maximumValue)
 
+        if len(self.values) == 0:
+            self.labelStatus.setText(self.tr("No valid bands to display"))
+
         self.showValues()
 
     def showValues(self):
@@ -384,7 +397,7 @@ class ValueWidget(QWidget, Ui_Widget):
             print('ERROR, no layers to get stats for')
         
         save_state=self.cbxActive.isChecked()
-        self.changeActive(Qt.Unchecked) # deactivate
+        self.changeActive(Qt.Unchecked, False) # deactivate
 
         # calculate statistics
         for layer in layersWOStatistics:
@@ -394,7 +407,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     self.getStats ( layer, i , True )
 
         if save_state:
-            self.changeActive(Qt.Checked) # activate if necessary
+            self.changeActive(Qt.Checked, False) # activate if necessary
 
     # get cached statistics for layer and band or None if not calculated
     def getStats ( self, layer, bandNo, force = False ):
@@ -475,10 +488,6 @@ class ValueWidget(QWidget, Ui_Widget):
             self.mplPlt.set_ylim( (ymin, ymax) ) 
             self.mplFig.canvas.draw()
 
-    def statsNeedChecked(self, indx):
-        #self.statsChecked = False
-        self.invalidatePlot()
-
     def invalidatePlot(self,replot=True):
         if self.tabWidget.currentIndex()==2:
             self.updateLayers()
@@ -496,6 +505,7 @@ class ValueWidget(QWidget, Ui_Widget):
     def resizeEvent(self, event):
         self.invalidatePlot()
 
+    # update active layers in table
     def updateLayers(self):
         if self.tabWidget.currentIndex()!=2:
             return
@@ -560,11 +570,11 @@ class ValueWidget(QWidget, Ui_Widget):
             item = QTableWidgetItem(str(activeBands))
             item.setToolTip(str(activeBands))
             self.tableWidget2.setItem(j, 3, item)
-            self.tableWidget2.setItem(j, 4, QTableWidgetItem("not yet..."))
             j=j+1
 
         self.tableWidget2.blockSignals(False)
 
+    # slot for when active layer selection has changed
     def layerSelected(self, row, column):
         if column != 0:
             return
@@ -578,12 +588,13 @@ class ValueWidget(QWidget, Ui_Widget):
             elif layerID in self.layersSelected:
                 self.layersSelected.remove(layerID)
 
+    # slot for when active band selection has changed
     def bandSelected(self,action):
         layerID=action.data()[0]
         layerBand=action.data()[1]
         j=action.data()[2]
 
-        # special toggle selected action
+        # special actions All/None
         if layerBand == -1:
             for layer in self.legend.layers():
                 if layer.id() == layerID:

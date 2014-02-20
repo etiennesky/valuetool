@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Wed Feb 19 21:18:24 2014
+# Created: Thu Feb 20 12:32:22 2014
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_ValueWidgetBase(object):
     def setupUi(self, ValueWidgetBase):
         ValueWidgetBase.setObjectName(_fromUtf8("ValueWidgetBase"))
-        ValueWidgetBase.resize(343, 270)
+        ValueWidgetBase.resize(343, 300)
         self.verticalLayout = QtGui.QVBoxLayout(ValueWidgetBase)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.horizontalLayout = QtGui.QHBoxLayout()
@@ -143,7 +143,7 @@ class Ui_ValueWidgetBase(object):
         self.tableWidget2 = QtGui.QTableWidget(self.tabWidgetPage3)
         self.tableWidget2.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tableWidget2.setObjectName(_fromUtf8("tableWidget2"))
-        self.tableWidget2.setColumnCount(5)
+        self.tableWidget2.setColumnCount(4)
         self.tableWidget2.setRowCount(0)
         item = QtGui.QTableWidgetItem()
         self.tableWidget2.setHorizontalHeaderItem(0, item)
@@ -153,8 +153,6 @@ class Ui_ValueWidgetBase(object):
         self.tableWidget2.setHorizontalHeaderItem(2, item)
         item = QtGui.QTableWidgetItem()
         self.tableWidget2.setHorizontalHeaderItem(3, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget2.setHorizontalHeaderItem(4, item)
         self.gridLayout.addWidget(self.tableWidget2, 4, 0, 1, 3)
         self.label_5 = QtGui.QLabel(self.tabWidgetPage3)
         self.label_5.setObjectName(_fromUtf8("label_5"))
@@ -166,6 +164,10 @@ class Ui_ValueWidgetBase(object):
         self.gridLayout.addWidget(self.line, 2, 0, 1, 3)
         self.tabWidget.addTab(self.tabWidgetPage3, _fromUtf8(""))
         self.verticalLayout.addWidget(self.tabWidget)
+        self.labelStatus = QtGui.QLabel(ValueWidgetBase)
+        self.labelStatus.setText(_fromUtf8(""))
+        self.labelStatus.setObjectName(_fromUtf8("labelStatus"))
+        self.verticalLayout.addWidget(self.labelStatus)
 
         self.retranslateUi(ValueWidgetBase)
         self.tabWidget.setCurrentIndex(0)
@@ -176,7 +178,7 @@ class Ui_ValueWidgetBase(object):
         ValueWidgetBase.setWindowTitle(_translate("ValueWidgetBase", "Form", None))
         self.cbxActive.setToolTip(_translate("ValueWidgetBase", "(Shift+A) to toggle", None))
         self.cbxActive.setStatusTip(_translate("ValueWidgetBase", "Check to activate value tool", None))
-        self.cbxActive.setText(_translate("ValueWidgetBase", "Active", None))
+        self.cbxActive.setText(_translate("ValueWidgetBase", "Enabled", None))
         self.cbxDigits.setToolTip(_translate("ValueWidgetBase", "Specify how many digits to show in table", None))
         self.cbxDigits.setText(_translate("ValueWidgetBase", "Decimals", None))
         item = self.tableWidget.horizontalHeaderItem(0)
@@ -207,8 +209,6 @@ class Ui_ValueWidgetBase(object):
         item.setToolTip(_translate("ValueWidgetBase", "Select bands", None))
         item = self.tableWidget2.horizontalHeaderItem(3)
         item.setText(_translate("ValueWidgetBase", "Bands", None))
-        item = self.tableWidget2.horizontalHeaderItem(4)
-        item.setText(_translate("ValueWidgetBase", "Color", None))
-        self.label_5.setText(_translate("ValueWidgetBase", "Select layers and display options:", None))
+        self.label_5.setText(_translate("ValueWidgetBase", "Select active layers and display options:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage3), _translate("ValueWidgetBase", "Options", None))
 

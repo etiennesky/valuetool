@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>343</width>
-    <height>270</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
         <string>Check to activate value tool</string>
        </property>
        <property name="text">
-        <string>Active</string>
+        <string>Enabled</string>
        </property>
       </widget>
      </item>
@@ -311,17 +311,12 @@
            <string>Bands</string>
           </property>
          </column>
-         <column>
-          <property name="text">
-           <string>Color</string>
-          </property>
-         </column>
         </widget>
        </item>
        <item row="3" column="0" colspan="3">
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Select layers and display options:</string>
+          <string>Select active layers and display options:</string>
          </property>
         </widget>
        </item>
@@ -334,6 +329,13 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelStatus">
+     <property name="text">
+      <string/>
+     </property>
     </widget>
    </item>
   </layout>
