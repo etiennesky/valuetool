@@ -63,6 +63,9 @@ class ValueWidget(QWidget, Ui_Widget):
         self.statsSampleSize = 2500000
         self.stats = {} # stats per layer
 
+        self.layersSelected=[]
+        self.layerBands=dict()
+
         self.iface=iface
         self.canvas=self.iface.mapCanvas()
         self.legend=self.iface.legendInterface()
@@ -76,7 +79,10 @@ class ValueWidget(QWidget, Ui_Widget):
         QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
-        #QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateBands )
+        QObject.connect(self.tabWidget, SIGNAL( "currentChanged ( int )" ), self.updateLayers )
+        QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
+        QObject.connect(self.cbxBands, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
+        QObject.connect(self.tableWidget2, SIGNAL("cellChanged ( int , int )"), self.layerSelected)
         #QObject.connect(self.modelLayers, SIGNAL( "dataChanged ( QModelIndex, QModelIndex )" ), self.updateBands2)
 
     def setupUi_extra(self):
@@ -189,16 +195,25 @@ class ValueWidget(QWidget, Ui_Widget):
         else:
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
-        #self.invalidatePlot() - TODO bring this back?
 
-    def activeRasterLayers(self):
+        if self.tabWidget.currentIndex()==2:
+            self.updateLayers()
+
+    def activeRasterLayers(self, index=None):
         layers=[]
         allLayers=[]
-        if self.cbxLayers.currentIndex() == 0:
+
+        if not index: 
+            index=self.cbxLayers.currentIndex()
+        if index == 0:
             allLayers=self.canvas.layers()
-        elif self.cbxLayers.currentIndex() == 1:
+        elif index == 1:
             allLayers=self.legend.layers()
-        # TODO update this
+        elif index == 2:
+            for layer in self.legend.layers():
+                if layer.id() in self.layersSelected:
+                    allLayers.append(layer)
+
         for layer in allLayers:
             if layer!=None and layer.isValid() and \
                     layer.type()==QgsMapLayer.RasterLayer and \
@@ -207,6 +222,21 @@ class ValueWidget(QWidget, Ui_Widget):
                   layers.append(layer)
 
         return layers
+
+    def activeBandsForRaster(self,layer):
+        activeBands=[]
+
+        if self.cbxBands.currentIndex() == 1 and layer.renderer():
+            activeBands = layer.renderer().usesBands()                 
+        elif self.cbxBands.currentIndex() == 2:
+            if layer.bandCount()==1:
+                activeBands=[1]
+            else:
+                activeBands = self.layerBands[layer.id()] if (layer.id() in self.layerBands) else []
+        else:
+            activeBands = range(1,layer.bandCount()+1)
+        
+        return activeBands
 
     def printValue(self,position):
         if self.tabWidget.currentIndex()==2:
@@ -301,12 +331,7 @@ class ValueWidget(QWidget, Ui_Widget):
                       ident[key] = layer.dataProvider().noDataValue(key)
 
               # bands displayed depends on cbxBands (all / active / selected)
-              if self.cbxBands.currentIndex() == 1 and layer.renderer():
-                  activeBands = layer.renderer().usesBands()                 
-              elif self.cbxBands.currentIndex() == 2:
-                  activeBands = [] # TODO update this
-              else:
-                  activeBands = range(1,layer.bandCount()+1)
+              activeBands = self.activeBandsForRaster(layer) 
                   
               for iband in activeBands: # loop over the active bands
                 layernamewithband=layername
@@ -455,6 +480,8 @@ class ValueWidget(QWidget, Ui_Widget):
         self.invalidatePlot()
 
     def invalidatePlot(self,replot=True):
+        if self.tabWidget.currentIndex()==2:
+            self.updateLayers()
         if not self.cbxActive.isChecked():
             return
         self.statsChecked = False
@@ -465,7 +492,120 @@ class ValueWidget(QWidget, Ui_Widget):
         if replot and self.tabWidget.currentIndex()==1:
             #self.values=[]
             self.printValue( None )
- 
+
     def resizeEvent(self, event):
         self.invalidatePlot()
 
+    def updateLayers(self):
+        if self.tabWidget.currentIndex()!=2:
+            return
+
+        if self.cbxLayers.currentIndex() == 0:
+            layers = self.activeRasterLayers(0)
+        else:
+            layers = self.activeRasterLayers(1)
+
+        self.tableWidget2.blockSignals(True)
+        self.tableWidget2.clearContents()
+        self.tableWidget2.setRowCount(len(layers))
+        self.tableWidget2.horizontalHeader().resizeSection(0, 20)
+        self.tableWidget2.horizontalHeader().resizeSection(2, 20)
+
+        j=0
+        for layer in layers:
+
+            item = QTableWidgetItem()
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            if self.cbxLayers.currentIndex() != 2:
+                item.setFlags(item.flags() &~ Qt.ItemIsEnabled)
+                item.setCheckState(Qt.Checked)
+            else:
+                if layer.id() in self.layersSelected:
+                    item.setCheckState(Qt.Checked)
+                else:
+                    item.setCheckState(Qt.Unchecked)
+            self.tableWidget2.setItem(j, 0, item)
+            item = QTableWidgetItem(layer.name())
+            item.setData(Qt.UserRole, str(layer.id()))
+            self.tableWidget2.setItem(j, 1, item)
+            activeBands = self.activeBandsForRaster(layer) 
+            button = QToolButton()
+            button.setText("#") # TODO add edit? icon
+            button.setPopupMode(QToolButton.InstantPopup)
+            group=QActionGroup(button)
+            group.setExclusive( False )
+            QObject.connect(group, SIGNAL("triggered(QAction*)"), self.bandSelected)
+            if self.cbxBands.currentIndex()==2 and layer.bandCount()>1:
+                menu=QMenu()
+                for iband in range(1,layer.bandCount()+1):
+                    action = QAction(str(layer.bandName(iband)),group)
+                    action.setData([layer.id(),iband,j,False])
+                    action.setCheckable(True)
+                    action.setChecked(iband in activeBands)
+                    menu.addAction(action)
+                if layer.bandCount() > 1:
+                    action = QAction(str(self.tr("All")),group)
+                    action.setData([layer.id(),-1,j,True])
+                    action.setCheckable(False)
+                    menu.addAction(action)
+                    action = QAction(str(self.tr("None")),group)
+                    action.setData([layer.id(),-1,j,False])
+                    action.setCheckable(False)
+                menu.addAction(action)
+
+                button.setMenu(menu)
+            else:
+                button.setEnabled(False)
+            self.tableWidget2.setCellWidget(j, 2, button)
+            item = QTableWidgetItem(str(activeBands))
+            item.setToolTip(str(activeBands))
+            self.tableWidget2.setItem(j, 3, item)
+            self.tableWidget2.setItem(j, 4, QTableWidgetItem("not yet..."))
+            j=j+1
+
+        self.tableWidget2.blockSignals(False)
+
+    def layerSelected(self, row, column):
+        if column != 0:
+            return
+
+        self.layersSelected=[]
+        for i in range(0, self.tableWidget2.rowCount()):
+            item=self.tableWidget2.item(i,0)
+            layerID=self.tableWidget2.item(i,1).data(Qt.UserRole)
+            if item and item.checkState()==Qt.Checked:
+                self.layersSelected.append(layerID)
+            elif layerID in self.layersSelected:
+                self.layersSelected.remove(layerID)
+
+    def bandSelected(self,action):
+        layerID=action.data()[0]
+        layerBand=action.data()[1]
+        j=action.data()[2]
+
+        # special toggle selected action
+        if layerBand == -1:
+            for layer in self.legend.layers():
+                if layer.id() == layerID:
+                    if action.data()[3]:
+                        activeBands = range(1,layer.bandCount()+1)
+                    else:
+                        activeBands = []
+            self.layerBands[layerID]=activeBands
+            self.updateLayers()
+            return
+
+        # any Band# action
+        activeBands = self.layerBands[layerID] if (layerID in self.layerBands) else []
+        if action.isChecked():
+            activeBands.append(layerBand)
+        else:
+            if layerBand in activeBands:
+                activeBands.remove(layerBand)
+
+        activeBands.sort()
+        self.layerBands[layerID]=activeBands
+
+        item = QTableWidgetItem(str(activeBands))
+        item.setToolTip(str(activeBands))
+        self.tableWidget2.setItem(j, 3, item)

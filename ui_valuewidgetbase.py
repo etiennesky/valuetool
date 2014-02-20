@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Tue Feb 18 20:10:55 2014
+# Created: Wed Feb 19 21:18:24 2014
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_ValueWidgetBase(object):
     def setupUi(self, ValueWidgetBase):
         ValueWidgetBase.setObjectName(_fromUtf8("ValueWidgetBase"))
-        ValueWidgetBase.resize(343, 214)
+        ValueWidgetBase.resize(343, 270)
         self.verticalLayout = QtGui.QVBoxLayout(ValueWidgetBase)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.horizontalLayout = QtGui.QHBoxLayout()
@@ -118,10 +118,8 @@ class Ui_ValueWidgetBase(object):
         self.tabWidgetPage3.setObjectName(_fromUtf8("tabWidgetPage3"))
         self.gridLayout = QtGui.QGridLayout(self.tabWidgetPage3)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
-        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem3, 0, 2, 1, 1)
-        spacerItem4 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem4, 2, 1, 1, 1)
+        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem3, 5, 1, 1, 1)
         self.label_3 = QtGui.QLabel(self.tabWidgetPage3)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.gridLayout.addWidget(self.label_3, 0, 0, 1, 1)
@@ -140,6 +138,32 @@ class Ui_ValueWidgetBase(object):
         self.cbxLayers.addItem(_fromUtf8(""))
         self.cbxLayers.addItem(_fromUtf8(""))
         self.gridLayout.addWidget(self.cbxLayers, 0, 1, 1, 1)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem4, 0, 2, 1, 1)
+        self.tableWidget2 = QtGui.QTableWidget(self.tabWidgetPage3)
+        self.tableWidget2.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tableWidget2.setObjectName(_fromUtf8("tableWidget2"))
+        self.tableWidget2.setColumnCount(5)
+        self.tableWidget2.setRowCount(0)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget2.setHorizontalHeaderItem(0, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget2.setHorizontalHeaderItem(1, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget2.setHorizontalHeaderItem(2, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget2.setHorizontalHeaderItem(3, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget2.setHorizontalHeaderItem(4, item)
+        self.gridLayout.addWidget(self.tableWidget2, 4, 0, 1, 3)
+        self.label_5 = QtGui.QLabel(self.tabWidgetPage3)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.gridLayout.addWidget(self.label_5, 3, 0, 1, 3)
+        self.line = QtGui.QFrame(self.tabWidgetPage3)
+        self.line.setFrameShape(QtGui.QFrame.HLine)
+        self.line.setFrameShadow(QtGui.QFrame.Sunken)
+        self.line.setObjectName(_fromUtf8("line"))
+        self.gridLayout.addWidget(self.line, 2, 0, 1, 3)
         self.tabWidget.addTab(self.tabWidgetPage3, _fromUtf8(""))
         self.verticalLayout.addWidget(self.tabWidget)
 
@@ -174,5 +198,17 @@ class Ui_ValueWidgetBase(object):
         self.cbxLayers.setItemText(0, _translate("ValueWidgetBase", "Visible layers", None))
         self.cbxLayers.setItemText(1, _translate("ValueWidgetBase", "All layers", None))
         self.cbxLayers.setItemText(2, _translate("ValueWidgetBase", "Selected layers", None))
+        item = self.tableWidget2.horizontalHeaderItem(0)
+        item.setToolTip(_translate("ValueWidgetBase", "Select layers", None))
+        item = self.tableWidget2.horizontalHeaderItem(1)
+        item.setText(_translate("ValueWidgetBase", "Layer", None))
+        item = self.tableWidget2.horizontalHeaderItem(2)
+        item.setText(_translate("ValueWidgetBase", "#", None))
+        item.setToolTip(_translate("ValueWidgetBase", "Select bands", None))
+        item = self.tableWidget2.horizontalHeaderItem(3)
+        item.setText(_translate("ValueWidgetBase", "Bands", None))
+        item = self.tableWidget2.horizontalHeaderItem(4)
+        item.setText(_translate("ValueWidgetBase", "Color", None))
+        self.label_5.setText(_translate("ValueWidgetBase", "Select layers and display options:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage3), _translate("ValueWidgetBase", "Options", None))
 
