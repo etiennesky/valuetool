@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Thu Feb 20 18:58:45 2014
+# Created: Thu Feb 20 19:23:18 2014
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,17 +26,9 @@ except AttributeError:
 class Ui_ValueWidgetBase(object):
     def setupUi(self, ValueWidgetBase):
         ValueWidgetBase.setObjectName(_fromUtf8("ValueWidgetBase"))
-        ValueWidgetBase.resize(343, 338)
+        ValueWidgetBase.resize(343, 309)
         self.verticalLayout = QtGui.QVBoxLayout(ValueWidgetBase)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.cbxActive = QtGui.QCheckBox(ValueWidgetBase)
-        self.cbxActive.setObjectName(_fromUtf8("cbxActive"))
-        self.horizontalLayout.addWidget(self.cbxActive)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.verticalLayout.addLayout(self.horizontalLayout)
         self.tabWidget = QtGui.QTabWidget(ValueWidgetBase)
         self.tabWidget.setTabPosition(QtGui.QTabWidget.North)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
@@ -62,8 +54,8 @@ class Ui_ValueWidgetBase(object):
         self.spinDigits.setProperty("value", 2)
         self.spinDigits.setObjectName(_fromUtf8("spinDigits"))
         self.horizontalLayout_3.addWidget(self.spinDigits)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem1)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem)
         self.verticalLayout_2.addWidget(self.widget)
         self.tableWidget = QtGui.QTableWidget(self.tabWidgetPage1)
         self.tableWidget.setObjectName(_fromUtf8("tableWidget"))
@@ -107,8 +99,8 @@ class Ui_ValueWidgetBase(object):
         self.plotSelector.setSizePolicy(sizePolicy)
         self.plotSelector.setObjectName(_fromUtf8("plotSelector"))
         self.horizontalLayout_2.addWidget(self.plotSelector)
-        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem2)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem1)
         self.verticalLayout_3.addWidget(self.graphControls)
         self.stackedWidget = QtGui.QStackedWidget(self.tabWidgetPage2)
         self.stackedWidget.setObjectName(_fromUtf8("stackedWidget"))
@@ -131,8 +123,8 @@ class Ui_ValueWidgetBase(object):
         self.label_4 = QtGui.QLabel(self.tabWidgetPage3)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.gridLayout_2.addWidget(self.label_4, 2, 0, 1, 1)
-        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_2.addItem(spacerItem3, 1, 2, 1, 1)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_2.addItem(spacerItem2, 1, 2, 1, 1)
         self.label_3 = QtGui.QLabel(self.tabWidgetPage3)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.gridLayout_2.addWidget(self.label_3, 1, 0, 1, 1)
@@ -171,8 +163,8 @@ class Ui_ValueWidgetBase(object):
         item = QtGui.QTableWidgetItem()
         self.tableWidget2.setHorizontalHeaderItem(3, item)
         self.verticalLayout_4.addWidget(self.tableWidget2)
-        spacerItem4 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout_4.addItem(spacerItem4)
+        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem3)
         self.tabWidget.addTab(self.tabWidgetPage3, _fromUtf8(""))
         self.verticalLayout.addWidget(self.tabWidget)
         self.labelStatus = QtGui.QLabel(ValueWidgetBase)
@@ -187,9 +179,6 @@ class Ui_ValueWidgetBase(object):
 
     def retranslateUi(self, ValueWidgetBase):
         ValueWidgetBase.setWindowTitle(_translate("ValueWidgetBase", "Form", None))
-        self.cbxActive.setToolTip(_translate("ValueWidgetBase", "(Shift+A) to toggle", None))
-        self.cbxActive.setStatusTip(_translate("ValueWidgetBase", "Check to activate value tool", None))
-        self.cbxActive.setText(_translate("ValueWidgetBase", "Enabled", None))
         self.cbxDigits.setToolTip(_translate("ValueWidgetBase", "Specify how many digits to show in table", None))
         self.cbxDigits.setText(_translate("ValueWidgetBase", "Decimals", None))
         item = self.tableWidget.horizontalHeaderItem(0)

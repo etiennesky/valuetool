@@ -58,6 +58,7 @@ class ValueWidget(QWidget, Ui_Widget):
         self.statsChecked=False
         self.ymin=0
         self.ymax=250
+        self.isActive=False
 
         # Statistics (>=1.9)
         self.statsSampleSize = 2500000
@@ -77,9 +78,6 @@ class ValueWidget(QWidget, Ui_Widget):
         self.tabWidget.setEnabled(False)
         self.setupUi_plot()
 
-        QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
-        QObject.connect(self.cbxClick,SIGNAL("stateChanged(int)"),self.changeClick)
-        QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
         QObject.connect(self.tabWidget, SIGNAL( "currentChanged ( int )" ), self.updateLayers )
         QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
@@ -157,15 +155,8 @@ class ValueWidget(QWidget, Ui_Widget):
         self.stackedWidget.setCurrentIndex(0)
 
     def disconnect(self):
-        self.changeActive(Qt.Unchecked)
-        QObject.disconnect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
+        self.changeActive(False)
     
-    def pauseDisplay(self,e):
-      if ( e.modifiers() == Qt.ShiftModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_A:
-        self.cbxActive.toggle()
-        return True
-      return False
-
     def keyPressEvent( self, e ):
       if ( e.modifiers() == Qt.ControlModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_C:
         items = ''
@@ -174,8 +165,6 @@ class ValueWidget(QWidget, Ui_Widget):
         if not items == '':
           clipboard = QApplication.clipboard()
           clipboard.setText( items )
-      elif (self.pauseDisplay(e)):
-        pass
       else:
         QWidget.keyPressEvent( self, e )
 
@@ -185,8 +174,9 @@ class ValueWidget(QWidget, Ui_Widget):
         else:
             self.stackedWidget.setCurrentIndex(0)
 
-    def changeActive(self,state,gui=True):
-        if (state==Qt.Checked):
+    def changeActive(self,active,gui=True):
+        self.isActive=active
+        if (active):
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             #QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
         else:
@@ -194,8 +184,8 @@ class ValueWidget(QWidget, Ui_Widget):
             #QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
 
         if gui:
-            self.tabWidget.setEnabled(state==Qt.Checked)
-            if state==Qt.Checked:
+            self.tabWidget.setEnabled(active)
+            if active:
                 self.labelStatus.setText(self.tr("Value tool is enabled"))
                 if self.tabWidget.currentIndex()==2:
                     self.updateLayers()
@@ -204,11 +194,6 @@ class ValueWidget(QWidget, Ui_Widget):
                 #use this to clear plot when deactivated
                 #self.values=[]
                 #self.showValues()
-
-
-    def changeClick(self,state):
-        if (self.cbxActive.isChecked()):
-            self.changeActive(self.cbxActive.checkState())
 
     def activeRasterLayers(self, index=None):
         layers=[]
@@ -397,15 +382,14 @@ class ValueWidget(QWidget, Ui_Widget):
 
         if ( len(layerNames) != 0 ):
             if not self.cbxStats.isChecked():
-                #self.cbxActive.setCheckState(Qt.Unchecked)  
                 for layer in layersWOStatistics:
                     self.layerMap[layer.id()] = True
                 return
         else:
             print('ERROR, no layers to get stats for')
         
-        save_state=self.cbxActive.isChecked()
-        self.changeActive(Qt.Unchecked, False) # deactivate
+        save_state=self.isActive
+        self.changeActive(False, False) # deactivate
 
         # calculate statistics
         for layer in layersWOStatistics:
@@ -415,7 +399,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     self.getStats ( layer, i , True )
 
         if save_state:
-            self.changeActive(Qt.Checked, False) # activate if necessary
+            self.changeActive(True, False) # activate if necessary
 
     # get cached statistics for layer and band or None if not calculated
     def getStats ( self, layer, bandNo, force = False ):
@@ -498,7 +482,7 @@ class ValueWidget(QWidget, Ui_Widget):
     def invalidatePlot(self,replot=True):
         if self.tabWidget.currentIndex()==2:
             self.updateLayers()
-        if not self.cbxActive.isChecked():
+        if not self.isActive:
             return
         self.statsChecked = False
         if self.mplLine is not None:
@@ -654,8 +638,7 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def shouldPrintValues(self):
         return  self.isVisible() and not self.visibleRegion().isEmpty() \
-                and self.cbxActive.isEnabled() and self.cbxActive.isChecked() \
-                and self.tabWidget.currentIndex()!=2 
+                and self.isActive and self.tabWidget.currentIndex()!=2 
 
     def toolMoved(self, position):
         if self.shouldPrintValues() and not self.cbxClick.isChecked():

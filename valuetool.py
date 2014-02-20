@@ -56,7 +56,6 @@ class ValueTool:
 
     # create the widget to display information
     self.valuewidget = ValueWidget(self.iface)
-    self.valuewidget.cbxActive.setEnabled(False)
     QObject.connect(self.tool, SIGNAL("moved"), self.valuewidget.toolMoved)
     QObject.connect(self.tool, SIGNAL("pressed"), self.valuewidget.toolPressed)
 
@@ -90,12 +89,10 @@ class ValueTool:
     self.canvas.setMapTool(self.tool)
     if not self.valuedockwidget.isVisible():
       self.valuedockwidget.show()
-    self.valuewidget.cbxActive.setEnabled(True)
-    self.valuewidget.cbxActive.setChecked(True)
+    self.valuewidget.changeActive(True)
 
   def deactivateTool(self):
-    self.valuewidget.cbxActive.setEnabled(False)
-    self.valuewidget.cbxActive.setChecked(False)
+    self.valuewidget.changeActive(False)
 
 
 class ValueMapTool(QgsMapTool):
