@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>343</width>
-    <height>300</height>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -201,86 +201,108 @@
       <attribute name="title">
        <string>Options</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="5" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QCheckBox" name="cbxClick">
+         <property name="toolTip">
+          <string>Use this if plotting is slow (e.g. when using mpl Graph) or to select a particular point</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Show layers:</string>
+          <string>mouse click to plot values</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="cbxBands">
-         <item>
-          <property name="text">
-           <string>All bands</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Active bands</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Selected bands</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Show bands:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="cbxLayers">
-         <item>
-          <property name="text">
-           <string>Visible layers</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>All layers</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Selected layers</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <spacer name="horizontalSpacer_4">
+       <item>
+        <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
-       <item row="4" column="0" colspan="3">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Show bands:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Show layers:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cbxLayers">
+           <item>
+            <property name="text">
+             <string>Visible layers</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>All layers</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Selected layers</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="cbxBands">
+           <item>
+            <property name="text">
+             <string>All bands</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Active bands</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Selected bands</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Select active layers and display options:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QTableWidget" name="tableWidget2">
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
@@ -313,19 +335,18 @@
          </column>
         </widget>
        </item>
-       <item row="3" column="0" colspan="3">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Select active layers and display options:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="3">
-        <widget class="Line" name="line">
+       <item>
+        <spacer name="verticalSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

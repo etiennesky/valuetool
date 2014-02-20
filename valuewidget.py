@@ -74,9 +74,11 @@ class ValueWidget(QWidget, Ui_Widget):
 
         QWidget.__init__(self)
         self.setupUi(self)
-        self.setupUi_extra()
+        self.tabWidget.setEnabled(False)
+        self.setupUi_plot()
 
         QObject.connect(self.cbxActive,SIGNAL("stateChanged(int)"),self.changeActive)
+        QObject.connect(self.cbxClick,SIGNAL("stateChanged(int)"),self.changeClick)
         QObject.connect(self.canvas, SIGNAL( "keyPressed( QKeyEvent * )" ), self.pauseDisplay )
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
         QObject.connect(self.tabWidget, SIGNAL( "currentChanged ( int )" ), self.updateLayers )
@@ -84,9 +86,9 @@ class ValueWidget(QWidget, Ui_Widget):
         QObject.connect(self.cbxBands, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.tableWidget2, SIGNAL("cellChanged ( int , int )"), self.layerSelected)
 
-    def setupUi_extra(self):
 
-        self.tabWidget.setEnabled(False)
+    def setupUi_plot(self):
+
         # plot
         self.plotSelector.setVisible( False )
         self.cbxStats.setVisible( False )
@@ -186,10 +188,10 @@ class ValueWidget(QWidget, Ui_Widget):
     def changeActive(self,state,gui=True):
         if (state==Qt.Checked):
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
+            #QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
         else:
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
+            #QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
 
         if gui:
             self.tabWidget.setEnabled(state==Qt.Checked)
@@ -199,7 +201,14 @@ class ValueWidget(QWidget, Ui_Widget):
                     self.updateLayers()
             else:
                 self.labelStatus.setText(self.tr(""))
+                #use this to clear plot when deactivated
+                #self.values=[]
+                #self.showValues()
 
+
+    def changeClick(self,state):
+        if (self.cbxActive.isChecked()):
+            self.changeActive(self.cbxActive.checkState())
 
     def activeRasterLayers(self, index=None):
         layers=[]
@@ -243,7 +252,6 @@ class ValueWidget(QWidget, Ui_Widget):
     def printValue(self,position):
         if self.tabWidget.currentIndex()==2:
             return
-
         layers = self.activeRasterLayers()
         if len(layers) == 0:
             if self.canvas.layerCount() > 0:
@@ -254,7 +262,7 @@ class ValueWidget(QWidget, Ui_Widget):
             self.showValues()
             return
         
-        self.labelStatus.setText(self.tr(""))
+        self.labelStatus.setText(self.tr('Coordinate:') + ' (%f, %f)' % (position.x(), position.y()))
 
         needextremum = (self.tabWidget.currentIndex()==1) # if plot is shown
 
@@ -450,7 +458,6 @@ class ValueWidget(QWidget, Ui_Widget):
 
 
     def plot(self):
-
         numvalues=[]
         if ( self.hasqwt or self.hasmpl ):
             for row in self.values:
@@ -644,4 +651,18 @@ class ValueWidget(QWidget, Ui_Widget):
                         obj.activeAction().trigger()
                         return True    
         return super(ValueWidget, self).eventFilter(obj, event)
+
+    def shouldPrintValues(self):
+        return  self.isVisible() and not self.visibleRegion().isEmpty() \
+                and self.cbxActive.isEnabled() and self.cbxActive.isChecked() \
+                and self.tabWidget.currentIndex()!=2 
+
+    def toolMoved(self, position):
+        if self.shouldPrintValues() and not self.cbxClick.isChecked():
+            self.printValue(self.canvas.getCoordinateTransform().toMapCoordinates(position))
+
+    def toolPressed(self, position):
+        if self.shouldPrintValues() and self.cbxClick.isChecked():
+            self.printValue(self.canvas.getCoordinateTransform().toMapCoordinates(position))
+
 

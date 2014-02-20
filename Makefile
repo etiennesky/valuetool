@@ -26,19 +26,19 @@ TEMPDIR = /tmp
 
 PY_FILES = __init__.py valuetool.py valuewidget.py
 
-EXTRAS = metadata.txt
+EXTRAS = metadata.txt icon.svg
 
 UI_FILES = ui_valuewidgetbase.py
 
-RESOURCE_FILES = resources.py
+RESOURCE_FILES = resources_rc.py
 
 default: compile
 
-#compile: $(UI_FILES) $(RESOURCE_FILES)
-compile: $(UI_FILES)
+compile: $(UI_FILES) $(RESOURCE_FILES)
+#compile: $(UI_FILES)
 
-%.py : %.rc
-	pyrcc4 -o $@  $<
+%_rc.py : %.qrc
+	pyrcc4 -o $*_rc.py  $<
 
 %.py : %.ui
 	pyuic4 -o $@ $<
@@ -50,7 +50,7 @@ deploy: compile
 	mkdir -p $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
-	#cp -vf $(RESOURCE_FILES) $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
+	cp -vf $(RESOURCE_FILES) $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
 	cp -vrf $(EXTRAS) $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
 	#mkdir -p $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)/docs
 
