@@ -176,10 +176,13 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def changeActive(self,active,gui=True):
         self.isActive=active
+        
         if (active):
+            self.cbxEnable.setCheckState(Qt.Checked)
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             #QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
         else:
+            self.cbxEnable.setCheckState(Qt.Unchecked)
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
             #QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
 

@@ -58,6 +58,7 @@ class ValueTool:
     self.valuewidget = ValueWidget(self.iface)
     QObject.connect(self.tool, SIGNAL("moved"), self.valuewidget.toolMoved)
     QObject.connect(self.tool, SIGNAL("pressed"), self.valuewidget.toolPressed)
+    QObject.connect(self.valuewidget.cbxEnable, SIGNAL("clicked( bool )"), self.toggleTool)
 
     # create the dockwidget with the correct parent and add the valuewidget
     self.valuedockwidget=QDockWidget("Value Tool" , self.iface.mainWindow() )
@@ -74,15 +75,18 @@ class ValueTool:
 ###Qt.AllDockWidgetAreas
   def unload(self):
     self.valuedockwidget.close()
-    self.valuewidget.disconnect()
-    self.canvas.unsetMapTool(self.tool)
-    if self.saveTool:
-      self.canvas.setMapTool(self.saveTool)
+    self.deactivateTool()
     # remove the dockwidget from iface
     self.iface.removeDockWidget(self.valuedockwidget)
     # remove the plugin menu item and icon
     #self.iface.removePluginMenu("Analyses",self.action)
     self.iface.removeToolBarIcon(self.action)
+
+  def toggleTool(self, active):
+    if active:
+      self.activateTool()
+    else:
+      self.deactivateTool()
 
   def activateTool(self):
     self.saveTool=self.canvas.mapTool()
@@ -92,5 +96,14 @@ class ValueTool:
     self.valuewidget.changeActive(True)
 
   def deactivateTool(self):
+    if self.canvas.mapTool() and self.canvas.mapTool() == self.tool:
+      # block signals to avoid recursion
+      self.tool.blockSignals(True)
+      if self.saveTool:
+        self.canvas.setMapTool(self.saveTool)
+        self.saveTool=None
+      else:
+        self.canvas.unsetMapTool(self.tool)
+      self.tool.blockSignals(False)
     self.valuewidget.changeActive(False)
-
+        

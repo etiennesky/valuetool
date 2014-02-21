@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Thu Feb 20 19:23:18 2014
+# Created: Fri Feb 21 13:20:15 2014
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,6 +29,9 @@ class Ui_ValueWidgetBase(object):
         ValueWidgetBase.resize(343, 309)
         self.verticalLayout = QtGui.QVBoxLayout(ValueWidgetBase)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.cbxEnable = QtGui.QCheckBox(ValueWidgetBase)
+        self.cbxEnable.setObjectName(_fromUtf8("cbxEnable"))
+        self.verticalLayout.addWidget(self.cbxEnable)
         self.tabWidget = QtGui.QTabWidget(ValueWidgetBase)
         self.tabWidget.setTabPosition(QtGui.QTabWidget.North)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
@@ -179,6 +182,8 @@ class Ui_ValueWidgetBase(object):
 
     def retranslateUi(self, ValueWidgetBase):
         ValueWidgetBase.setWindowTitle(_translate("ValueWidgetBase", "Form", None))
+        self.cbxEnable.setToolTip(_translate("ValueWidgetBase", "Can also be enabled using the \"Value Tool\" toolbar icon", None))
+        self.cbxEnable.setText(_translate("ValueWidgetBase", "Enable", None))
         self.cbxDigits.setToolTip(_translate("ValueWidgetBase", "Specify how many digits to show in table", None))
         self.cbxDigits.setText(_translate("ValueWidgetBase", "Decimals", None))
         item = self.tableWidget.horizontalHeaderItem(0)
