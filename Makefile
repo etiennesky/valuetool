@@ -24,7 +24,7 @@ PLUGINNAME = valuetool
 # for building dist zip
 TEMPDIR = /tmp
 
-PY_FILES = __init__.py valuetool.py valuewidget.py
+PY_FILES = __init__.py valuetool.py valuewidget.py valuemaptool.py
 
 EXTRAS = metadata.txt icon.svg
 

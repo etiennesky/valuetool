@@ -21,9 +21,9 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-from qgis.gui import QgsMapTool
 
 from valuewidget import ValueWidget
+from valuemaptool import ValueMapTool
 
 #from selectPointTool import *
 # initialize Qt resources from file resouces.py
@@ -94,36 +94,3 @@ class ValueTool:
   def deactivateTool(self):
     self.valuewidget.changeActive(False)
 
-
-class ValueMapTool(QgsMapTool):
-
-    def __init__(self, canvas, button):
-        QgsMapTool.__init__(self,canvas)
-        self.canvas = canvas
-        self.cursor = QCursor(Qt.CrossCursor)
-        self.button = button
-
-    def activate(self):
-        QgsMapTool.activate(self)
-        self.canvas.setCursor(self.cursor)
-        self.button.setCheckable(True)
-        self.button.setChecked(True)
-        
-    def deactivate(self):
-        if not self:
-            return
-        self.emit( SIGNAL("deactivate") )
-        self.button.setCheckable(False)
-        QgsMapTool.deactivate(self)
-
-    def isZoomTool(self):
-        return False
-
-    def setCursor(self,cursor):
-        self.cursor = QCursor(cursor)
-
-    def canvasMoveEvent(self,event):
-        self.emit( SIGNAL("moved"), QPoint(event.pos().x(), event.pos().y()) )
-
-    def canvasPressEvent(self,event):
-        self.emit( SIGNAL("pressed"), QPoint(event.pos().x(), event.pos().y()) )
