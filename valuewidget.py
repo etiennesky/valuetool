@@ -154,9 +154,6 @@ class ValueWidget(QWidget, Ui_Widget):
 
         self.stackedWidget.setCurrentIndex(0)
 
-    def disconnect(self):
-        self.changeActive(False)
-    
     def keyPressEvent( self, e ):
       if ( e.modifiers() == Qt.ControlModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_C:
         items = ''

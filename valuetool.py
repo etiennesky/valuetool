@@ -70,9 +70,6 @@ class ValueTool:
     self.iface.addDockWidget(Qt.LeftDockWidgetArea,self.valuedockwidget)
     #self.valuewidget.show()
 
-
-
-###Qt.AllDockWidgetAreas
   def unload(self):
     self.valuedockwidget.close()
     self.deactivateTool()
@@ -83,10 +80,7 @@ class ValueTool:
     self.iface.removeToolBarIcon(self.action)
 
   def toggleTool(self, active):
-    if active:
-      self.activateTool()
-    else:
-      self.deactivateTool()
+    self.activateTool() if active else self.deactivateTool()
 
   def activateTool(self):
     self.saveTool=self.canvas.mapTool()
