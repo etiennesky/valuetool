@@ -235,8 +235,11 @@ class ValueWidget(QWidget, Ui_Widget):
         return activeBands
 
     def printValue(self,position):
+        #if not position:
+        #    return
         if self.tabWidget.currentIndex()==2:
             return
+
         layers = self.activeRasterLayers()
         if len(layers) == 0:
             if self.canvas.layerCount() > 0:
