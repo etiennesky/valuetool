@@ -534,7 +534,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     item.setCheckState(Qt.Unchecked)
             self.tableWidget2.setItem(j, 0, item)
             item = QTableWidgetItem(layer.name())
-            item.setData(Qt.UserRole, str(layer.id()))
+            item.setData(Qt.UserRole, layer.id())
             self.tableWidget2.setItem(j, 1, item)
             activeBands = self.activeBandsForRaster(layer) 
             button = QToolButton()
