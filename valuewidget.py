@@ -48,6 +48,7 @@ if hasmpl:
     if int(matplotlib.__version__[0]) < 1:
         hasmpl = False
 
+
 class ValueWidget(QWidget, Ui_Widget):
 
     def __init__(self, iface):
@@ -92,14 +93,8 @@ class ValueWidget(QWidget, Ui_Widget):
         self.cbxStats.setVisible( False )
         # stats by default because estimated are fast
         self.cbxStats.setChecked( True )
-        if self.hasqwt:
-            self.plotSelector.addItem( 'Qwt' )
-        if self.hasmpl:
-            self.plotSelector.addItem( 'mpl' )
-        self.plotSelector.setCurrentIndex( 0 );
-        if (self.hasqwt and self.hasmpl):
-            self.plotSelector.setEnabled(True)
-            self.plotSelector.setVisible(True)
+        self.plotSelector.addItem( 'Qwt' )
+        self.plotSelector.addItem( 'mpl' )
 
         # Page 2 - qwt
         if self.hasqwt:
@@ -152,7 +147,16 @@ class ValueWidget(QWidget, Ui_Widget):
         self.mplPlot.updateGeometry()
         self.stackedWidget.addWidget(self.mplPlot)
 
-        self.stackedWidget.setCurrentIndex(0)
+        if (self.hasqwt and self.hasmpl):
+            self.plotSelector.setEnabled(True)
+            self.plotSelector.setVisible(True)
+            self.plotSelector.setCurrentIndex(0);
+        else:
+            if self.hasqwt:
+                self.plotSelector.setCurrentIndex(0);
+            else:
+                self.plotSelector.setCurrentIndex(1);
+        self.changePlot()
 
     def keyPressEvent( self, e ):
       if ( e.modifiers() == Qt.ControlModifier or e.modifiers() == Qt.MetaModifier ) and e.key() == Qt.Key_C:
