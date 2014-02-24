@@ -4,13 +4,14 @@ qgisMinimumVersion = 2.0
 description = Display in a table or plot the values from the visible raster 
 	layers at the current mouse position
 category = Raster
-version = version 0.8.1
+version = version 0.8.2
 author = 'Ghislain Picard - Etienne Tourigny'
 email=etourigny.dev@gmail.com
 ; original author is no longer contributing, current maintainer is Etienne Tourigny
 ; other authors include : Richard Duivenvoorde, Ricardo Silva, Etienne Tourigny, Radim Blazek
 ; optional metadata entries
 changelog=
+    0.8.2 : bugfixes (see #4536)
     0.8.1 : restore Enabled checkbox and small bugfix
     0.8.0 : change to a Map Tool and add option to plot values with mouse click
     0.7.1 : do not close band selector menu when band is selected
