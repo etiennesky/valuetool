@@ -77,10 +77,15 @@ class ValueWidget(QWidget, Ui_Widget):
         QWidget.__init__(self)
         self.setupUi(self)
         self.tabWidget.setEnabled(False)
-        self.setupUi_plot()
+
+        #self.setupUi_plot()
+        #don't setup plot until Plot tab is clicked - workaround for bug #7450
+        #qgis will still crash in some cases, but at least the tool can be used in Table mode
+        self.qwtPlot = None
+        self.mplPlot = None
 
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
-        QObject.connect(self.tabWidget, SIGNAL( "currentChanged ( int )" ), self.updateLayers )
+        QObject.connect(self.tabWidget, SIGNAL( "currentChanged ( int )" ), self.tabWidgetChanged )
         QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.cbxBands, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.tableWidget2, SIGNAL("cellChanged ( int , int )"), self.layerSelected)
@@ -502,6 +507,12 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def resizeEvent(self, event):
         self.invalidatePlot()
+
+    def tabWidgetChanged(self):
+        if self.tabWidget.currentIndex()==1 and not self.qwtPlot:
+            self.setupUi_plot()
+        if self.tabWidget.currentIndex()==2:
+            self.updateLayers()
 
     # update active layers in table
     def updateLayers(self):
