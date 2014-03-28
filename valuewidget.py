@@ -83,6 +83,7 @@ class ValueWidget(QWidget, Ui_Widget):
         #qgis will still crash in some cases, but at least the tool can be used in Table mode
         self.qwtPlot = None
         self.mplPlot = None
+        self.mplLine = None
 
         QObject.connect(self.plotSelector, SIGNAL( "currentIndexChanged ( int )" ), self.changePlot )
         QObject.connect(self.tabWidget, SIGNAL( "currentChanged ( int )" ), self.tabWidgetChanged )
