@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>343</width>
-    <height>309</height>
+    <height>335</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -185,10 +185,10 @@
        <item>
         <widget class="QCheckBox" name="cbxClick">
          <property name="toolTip">
-          <string>Use this if plotting is slow (e.g. when using mpl Graph) or to select a particular point</string>
+          <string>Replaces active map tool. Use this to select a particular point or if plotting is slow (e.g. when using mpl Graph).</string>
          </property>
          <property name="text">
-          <string>mouse click to plot values</string>
+          <string>Plot values only when mouse is clicked</string>
          </property>
         </widget>
        </item>

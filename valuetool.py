@@ -59,6 +59,7 @@ class ValueTool:
     QObject.connect(self.tool, SIGNAL("moved"), self.valuewidget.toolMoved)
     QObject.connect(self.tool, SIGNAL("pressed"), self.valuewidget.toolPressed)
     QObject.connect(self.valuewidget.cbxEnable, SIGNAL("clicked( bool )"), self.toggleTool)
+    QObject.connect(self.valuewidget.cbxClick, SIGNAL("clicked( bool )"), self.toggleMouseClick)
 
     # create the dockwidget with the correct parent and add the valuewidget
     self.valuedockwidget=QDockWidget("Value Tool" , self.iface.mainWindow() )
@@ -71,6 +72,7 @@ class ValueTool:
     #self.valuewidget.show()
 
   def unload(self):
+    QSettings().setValue('plugins/valuetool/mouseClick', self.valuewidget.cbxClick.isChecked())
     self.valuedockwidget.close()
     self.deactivateTool()
     # remove the dockwidget from iface
@@ -82,14 +84,24 @@ class ValueTool:
   def toggleTool(self, active):
     self.activateTool() if active else self.deactivateTool()
 
-  def activateTool(self):
-    self.saveTool=self.canvas.mapTool()
-    self.canvas.setMapTool(self.tool)
+  def toggleMouseClick(self, toggle):
+    if toggle:
+      self.activateTool(False)
+    else:
+      self.deactivateTool(False)
+    self.valuewidget.changeActive(False, False)
+    self.valuewidget.changeActive(True, False)
+      
+  def activateTool(self, changeActive=True):
+    if self.valuewidget.cbxClick.isChecked():
+      self.saveTool=self.canvas.mapTool()
+      self.canvas.setMapTool(self.tool)
     if not self.valuedockwidget.isVisible():
       self.valuedockwidget.show()
-    self.valuewidget.changeActive(True)
+    if changeActive:
+      self.valuewidget.changeActive(True)
 
-  def deactivateTool(self):
+  def deactivateTool(self, changeActive=True):
     if self.canvas.mapTool() and self.canvas.mapTool() == self.tool:
       # block signals to avoid recursion
       self.tool.blockSignals(True)
@@ -99,5 +111,6 @@ class ValueTool:
       else:
         self.canvas.unsetMapTool(self.tool)
       self.tool.blockSignals(False)
-    self.valuewidget.changeActive(False)
+    if changeActive:
+      self.valuewidget.changeActive(False)
         

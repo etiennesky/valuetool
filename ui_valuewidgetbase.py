@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_valuewidgetbase.ui'
 #
-# Created: Fri Feb 21 13:20:15 2014
+# Created: Thu Apr 10 12:29:10 2014
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_ValueWidgetBase(object):
     def setupUi(self, ValueWidgetBase):
         ValueWidgetBase.setObjectName(_fromUtf8("ValueWidgetBase"))
-        ValueWidgetBase.resize(343, 309)
+        ValueWidgetBase.resize(388, 335)
         self.verticalLayout = QtGui.QVBoxLayout(ValueWidgetBase)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.cbxEnable = QtGui.QCheckBox(ValueWidgetBase)
@@ -197,8 +197,8 @@ class Ui_ValueWidgetBase(object):
         self.label_2.setText(_translate("ValueWidgetBase", "Y max", None))
         self.plotSelector.setToolTip(_translate("ValueWidgetBase", "Select plotting toolkit", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage2), _translate("ValueWidgetBase", "Graph", None))
-        self.cbxClick.setToolTip(_translate("ValueWidgetBase", "Use this if plotting is slow (e.g. when using mpl Graph) or to select a particular point", None))
-        self.cbxClick.setText(_translate("ValueWidgetBase", "mouse click to plot values", None))
+        self.cbxClick.setToolTip(_translate("ValueWidgetBase", "Replaces active map tool. Use this if plotting is slow (e.g. when using mpl Graph) or to select a particular point", None))
+        self.cbxClick.setText(_translate("ValueWidgetBase", "Plot values only when mouse is clicked", None))
         self.label_4.setText(_translate("ValueWidgetBase", "Show bands:", None))
         self.label_3.setText(_translate("ValueWidgetBase", "Show layers:", None))
         self.cbxLayers.setItemText(0, _translate("ValueWidgetBase", "Visible layers", None))

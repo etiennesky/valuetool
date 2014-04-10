@@ -77,6 +77,7 @@ class ValueWidget(QWidget, Ui_Widget):
         QWidget.__init__(self)
         self.setupUi(self)
         self.tabWidget.setEnabled(False)
+        self.cbxClick.setChecked( QSettings().value('plugins/valuetool/mouseClick', False, type=bool ) )
 
         #self.setupUi_plot()
         #don't setup plot until Plot tab is clicked - workaround for bug #7450
@@ -90,7 +91,6 @@ class ValueWidget(QWidget, Ui_Widget):
         QObject.connect(self.cbxLayers, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.cbxBands, SIGNAL( "currentIndexChanged ( int )" ), self.updateLayers )
         QObject.connect(self.tableWidget2, SIGNAL("cellChanged ( int , int )"), self.layerSelected)
-
 
     def setupUi_plot(self):
 
@@ -187,11 +187,12 @@ class ValueWidget(QWidget, Ui_Widget):
         if (active):
             self.cbxEnable.setCheckState(Qt.Checked)
             QObject.connect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            #QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
+            if not self.cbxClick.isChecked():
+                QObject.connect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
         else:
             self.cbxEnable.setCheckState(Qt.Unchecked)
             QObject.disconnect(self.canvas, SIGNAL( "layersChanged ()" ), self.invalidatePlot )
-            #QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
+            QObject.disconnect(self.canvas, SIGNAL("xyCoordinates(const QgsPoint &)"), self.printValue)
 
         if gui:
             self.tabWidget.setEnabled(active)
