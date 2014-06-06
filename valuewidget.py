@@ -48,6 +48,7 @@ if hasmpl:
     if int(matplotlib.__version__[0]) < 1:
         hasmpl = False
 
+debug=0
 
 class ValueWidget(QWidget, Ui_Widget):
 
@@ -246,11 +247,17 @@ class ValueWidget(QWidget, Ui_Widget):
         return activeBands
 
     def printValue(self,position):
+
+        if debug > 0:
+            print(position)
+
         if not position:
             return
         if self.tabWidget.currentIndex()==2:
             return
 
+        if debug > 0:
+            print("%d active rasters, %d canvas layers" %(len(self.activeRasterLayers()),self.canvas.layerCount()))
         layers = self.activeRasterLayers()
         if len(layers) == 0:
             if self.canvas.layerCount() > 0:
