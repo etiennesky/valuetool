@@ -315,8 +315,7 @@ class ValueWidget(QWidget, Ui_Widget):
                 if ('Band_' in d and 'glossy' not in d and '=' in d):
                     variableName,valueWavelength=d.split('=')
                     bandNumber=int(variableName.split('_')[1])
-      
-                    self.wavelengths[bandNumber]=float(valueWavelength.split(' ')[0])
+                    self.wavelengths[bandNumber]=float(valueWavelength.split(' ')[-2].replace('(',''))
                 elif('wavelength_units' in d):
                     variableName,v=d.split('=')
                     self.wavelength_units=v    
