@@ -31,7 +31,7 @@ from ui_valuewidgetbase import Ui_ValueWidgetBase as Ui_Widget
 
 hasqwt=True
 try:
-    from PyQt4.Qwt5 import QwtPlot,QwtPlotCurve,QwtScaleDiv,QwtSymbol
+    from PyQt4.Qwt5 import QwtPlot,QwtPlotCurve,QwtScaleDiv,QwtSymbol,QwtText
 except:
     hasqwt=False
 
@@ -484,7 +484,7 @@ class ValueWidget(QWidget, Ui_Widget):
         numvalues=[]
         wlvalues=[]
         bandsUsed=[]
-        f         
+                
         if ( self.hasqwt or self.hasmpl ):
             for row in self.values:
                 layername,value=row
@@ -498,7 +498,7 @@ class ValueWidget(QWidget, Ui_Widget):
                     wlvalues.append(self.wavelengths[i])
             else:
                 wlvalues=range(1,len(numvalues)+1)
-        f.close()           
+                  
         ymin = self.ymin
         ymax = self.ymax
         xmin = float(min(wlvalues))
@@ -516,9 +516,16 @@ class ValueWidget(QWidget, Ui_Widget):
             self.qwtPlot.setAxisScale(QwtPlot.yLeft,ymin,ymax)
             
             self.curve.setData(wlvalues, numvalues)
+            if(self.wavelength_units.lower()=='micrometers' or self.wavelength_units.lower()=='microns'):
+                xlabel=QwtText('Wavelength (um)')
+            elif(self.wavelength_units.lower()=='nanometers'):
+                xlabel=QwtText('Wavelength (nm)')
+            else:
+                xlabel=QwtText('Bands')
+            self.qwtPlot.setAxisTitle(QwtPlot.xBottom,xlabel)
             self.qwtPlot.replot()
             self.qwtPlot.setVisible(len(numvalues)>0)
-
+            
         elif ( self.hasmpl and (self.plotSelector.currentText()=='mpl') ):
 
             self.mplPlt.clear()
