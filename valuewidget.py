@@ -31,7 +31,7 @@ from ui_valuewidgetbase import Ui_ValueWidgetBase as Ui_Widget
 
 hasqwt=True
 try:
-    from PyQt4.Qwt5 import QwtPlot,QwtPlotCurve,QwtScaleDiv,QwtSymbol
+    from PyQt4.Qwt5 import QwtPlot,QwtPlotCurve,QwtScaleDiv,QwtSymbol,QwtText
 except:
     hasqwt=False
 
@@ -221,7 +221,7 @@ class ValueWidget(QWidget, Ui_Widget):
             for layer in self.legend.layers():
                 if layer.id() in self.layersSelected:
                     allLayers.append(layer)
-
+        
         for layer in allLayers:
             if layer!=None and layer.isValid() and \
                     layer.type()==QgsMapLayer.RasterLayer and \
@@ -302,8 +302,26 @@ class ValueWidget(QWidget, Ui_Widget):
 
         # TODO - calculate the min/max values only once, instead of every time!!!
         # keep them in a dict() with key=layer.id()
-                
+        
+        
+        #pull out wavelength if it exists in metadata
+        #piece to pull out wavelength information if present in metadata
+        rasterMeta=rasterlayers[0].metadata()
+        self.wavelengths={}
+        self.wavelength_units=''
+        if('wavelength' in rasterMeta):
+            mdSplit=rasterMeta.split('</p>')
+            for d in mdSplit:
+                if ('Band_' in d and 'glossy' not in d and '=' in d):
+                    variableName,valueWavelength=d.split('=')
+                    bandNumber=int(variableName.split('_')[1])
+                    self.wavelengths[bandNumber]=float(valueWavelength.split(' ')[-2].replace('(',''))
+                elif('wavelength_units' in d):
+                    variableName,v=d.split('=')
+                    self.wavelength_units=v    
+         ####         
         for layer in rasterlayers:
+            
             layername=unicode(layer.name())
             layerSrs = layer.crs()
 
@@ -464,16 +482,27 @@ class ValueWidget(QWidget, Ui_Widget):
 
     def plot(self):
         numvalues=[]
+        wlvalues=[]
+        bandsUsed=[]
+                
         if ( self.hasqwt or self.hasmpl ):
             for row in self.values:
                 layername,value=row
+                bandsUsed.append(int(layername.split(' ')[-1]))
                 try:
                     numvalues.append(float(value))
                 except:
                     numvalues.append(0)
-
+            if(len(self.wavelengths)!=0):
+                for i in bandsUsed:
+                    wlvalues.append(self.wavelengths[i])
+            else:
+                wlvalues=range(1,len(numvalues)+1)
+                  
         ymin = self.ymin
         ymax = self.ymax
+        xmin = float(min(wlvalues))
+        xmax = float(max(wlvalues))
         if self.leYMin.text() != '' and self.leYMax.text() != '': 
             ymin = float(self.leYMin.text())
             ymax = float(self.leYMax.text())        
@@ -482,22 +511,34 @@ class ValueWidget(QWidget, Ui_Widget):
 
             self.qwtPlot.setAxisMaxMinor(QwtPlot.xBottom,0)
             #self.qwtPlot.setAxisMaxMajor(QwtPlot.xBottom,0)
-            self.qwtPlot.setAxisScale(QwtPlot.xBottom,1,len(self.values))
+            self.qwtPlot.setAxisScale(QwtPlot.xBottom,xmin,xmax)
             #self.qwtPlot.setAxisScale(QwtPlot.yLeft,self.ymin,self.ymax)
             self.qwtPlot.setAxisScale(QwtPlot.yLeft,ymin,ymax)
             
-            self.curve.setData(range(1,len(numvalues)+1), numvalues)
+            self.curve.setData(wlvalues, numvalues)
+            if(self.wavelength_units.lower()=='micrometers' or self.wavelength_units.lower()=='microns'):
+                xlabel=QwtText('Wavelength (um)')
+            elif(self.wavelength_units.lower()=='nanometers'):
+                xlabel=QwtText('Wavelength (nm)')
+            else:
+                xlabel=QwtText('Bands')
+            self.qwtPlot.setAxisTitle(QwtPlot.xBottom,xlabel)
             self.qwtPlot.replot()
             self.qwtPlot.setVisible(len(numvalues)>0)
-
+            
         elif ( self.hasmpl and (self.plotSelector.currentText()=='mpl') ):
 
             self.mplPlt.clear()
-            self.mplPlt.plot(range(1,len(numvalues)+1), numvalues, marker='o', color='k', mfc='b', mec='b')
-            self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+            self.mplPlt.plot(wlvalues, numvalues, marker='o', color='k', mfc='b', mec='b')
+            #self.mplPlt.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
             self.mplPlt.yaxis.set_minor_locator(ticker.AutoMinorLocator())
-            self.mplPlt.set_xlim( (1-0.25,len(self.values)+0.25 ) )
-            self.mplPlt.set_ylim( (ymin, ymax) ) 
+            self.mplPlt.set_xlim( (xmin, xmax ) )
+            self.mplPlt.set_ylim( (ymin, ymax) )
+            
+            if(self.wavelength_units.lower()=='micrometers' or self.wavelength_units.lower()=='microns'):xlabel='Wavelength ($\mu$m)'
+            elif(self.wavelength_units.lower()=='nanometers'):xlabel='Wavelength (nm)'
+            else:xlabel='Bands'
+            self.mplPlt.set_xlabel(xlabel) 
             self.mplFig.canvas.draw()
 
     def invalidatePlot(self,replot=True):
